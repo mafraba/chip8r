@@ -70,7 +70,7 @@ impl Default for Chip8Core {
 
 // Methods for a Chip8Core
 impl Chip8Core {
-    // Create a new brand Chip8Core instance
+    // Create a new Chip8Core instance
     fn new() -> Chip8Core {
         Default::default()
     }
