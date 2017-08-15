@@ -5,3 +5,4 @@ authors = ["Manuel Franco <mafraba@gmail.com>"]
 
 [dependencies]
 clap = "~2.19.0"
+byteorder = "1"
