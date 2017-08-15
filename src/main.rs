@@ -1,3 +1,5 @@
+#![feature(slice_patterns)]
+
 #[cfg(test)]
 mod tests;
 
@@ -8,9 +10,7 @@ use byteorder::{BigEndian, ByteOrder};
 use clap::{Arg, App};
 use std::error::Error;
 use std::fs::File;
-use std::io::Cursor;
 use std::io::prelude::*;
-
 
 fn main() {
     // Define command line arguments.
@@ -73,6 +73,8 @@ impl Default for Chip8Core {
 }
 
 // Methods for a Chip8Core
+// XXX: will probably end up refactoring this into an immutable 'Chip8State' entity
+//      wrapped in here, so each state modification leads to a new state but each of them is immutable
 impl Chip8Core {
 
     // Create a new Chip8Core instance
@@ -86,8 +88,41 @@ impl Chip8Core {
     }
 
     // Read next instruction
-    fn read_instruction(&self) -> u16 {
+    fn read_instruction(&self) -> Chip8Instruction {
         let pointer = &self.ram[(self.pc as usize) ..];
-        BigEndian::read_u16(pointer)
+        let word = BigEndian::read_u16(pointer);
+        Chip8Instruction(word)
+    }
+
+    // Execute next instruction
+    fn exec_instruction(&mut self) {
+        let op = self.read_instruction();
+        let nibbles = [op.nibble(1), op.nibble(2), op.nibble(3), op.nibble(4)];
+        match &nibbles {
+            &[0,0,0xE,0] => {
+                self.clear_screen();
+                self.pc += 2;
+            }
+            _ => {}
+        }
+    }
+
+    fn clear_screen(&mut self) {
+        (&mut self.ram[0xF00..0xFFF]).copy_from_slice(&[0;0xFF])
+    }
+}
+
+// Chip8 instructions modeled as 16-bit unsigned integers
+#[derive(Debug)]
+#[derive(PartialEq)]
+struct Chip8Instruction(u16);
+
+impl Chip8Instruction {
+    // Extract selected nibble (1-4)
+    fn nibble(&self, n: u8) -> u8 {
+        assert!(n > 0 && n <= 4, "nibble out of range 1-4");
+        let nibbles_to_shift = 4 - n;
+        let bits_to_shift = 4 * nibbles_to_shift;
+        ((self.0 >> bits_to_shift) & 0xF) as u8
     }
 }

@@ -19,9 +19,35 @@ fn load_data() {
 }
 
 #[test]
-fn test_read_instruction() {
+fn read_instruction() {
     let mut ch8core = Chip8Core::new();
     let data: &[u8] = &[1,2];
     ch8core.load(data);
-    assert_eq!(ch8core.read_instruction(), 0x0102);
+    assert_eq!(ch8core.read_instruction(), Chip8Instruction(0x0102));
+}
+
+#[test]
+fn nibble_extraction() {
+    let op = Chip8Instruction(0xABCD);
+    assert_eq!(op.nibble(1), 0x0A);
+    assert_eq!(op.nibble(2), 0x0B);
+    assert_eq!(op.nibble(3), 0x0C);
+    assert_eq!(op.nibble(4), 0x0D);
+}
+
+#[test]
+fn clear_screen_instruction() {
+    let mut ch8core = Chip8Core::new();
+    // load a single CLS instruction
+    let data: &[u8] = &[0x00,0xE0];
+    ch8core.load(data);
+    assert_eq!(ch8core.read_instruction(), Chip8Instruction(0x00E0));
+    // put some garbage on display buffer
+    ch8core.ram[0xF00] = 1;
+    ch8core.ram[0xFFF] = 1;
+    ch8core.exec_instruction();
+    // check it was cleared
+    for byte in &ch8core.ram[0xF00..0xFFF] {
+        assert_eq!(*byte, 0);
+    }
 }
