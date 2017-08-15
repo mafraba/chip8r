@@ -76,3 +76,13 @@ fn return_from_subroutine_instruction() {
     assert_eq!(ch8core.sp, initial_sp-2);
     assert_eq!(ch8core.pc, 0x0ABC);
 }
+
+#[test]
+fn jump_instruction() {
+    let mut ch8core = Chip8Core::new();
+    // load return instruction and execute
+    ch8core.load(&[0x1A,0xBC]);
+    ch8core.exec_instruction();
+    // check state
+    assert_eq!(ch8core.pc, 0x0ABC);
+}

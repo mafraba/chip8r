@@ -103,6 +103,8 @@ impl Chip8Core {
             &[0,0,0xE,0] => self.clear_screen(),
             // 00EE: Return from subroutine
             &[0,0,0xE,0xE] => self.return_from_subroutine(),
+            // 1nnn: Jump to 'nnn' address
+            &[1,a1,a2,a3] => self.jump_to(((a1 as u16) << 8) | ((a2 as u16) << 4) | (a3 as u16)),
             //
             _ => {}
         }
@@ -122,6 +124,10 @@ impl Chip8Core {
     // Read the return address the SP points to
     fn read_return_address(&self) -> u16 {
         BigEndian::read_u16(&self.ram[(self.sp as usize)..])
+    }
+
+    fn jump_to(&mut self, addr: u16) {
+        self.pc = addr;
     }
 }
 
