@@ -51,3 +51,28 @@ fn clear_screen_instruction() {
         assert_eq!(*byte, 0);
     }
 }
+
+#[test]
+fn read_return_address() {
+    let mut ch8core = Chip8Core::new();
+    // set some ret address
+    ch8core.ram[ch8core.sp as usize] = 0x0A;
+    ch8core.ram[(ch8core.sp+1) as usize] = 0xBC;
+    // check return
+    assert_eq!(ch8core.read_return_address(), 0x0ABC);
+}
+
+#[test]
+fn return_from_subroutine_instruction() {
+    let mut ch8core = Chip8Core::new();
+    let initial_sp = ch8core.sp;
+    // set some ret address
+    ch8core.ram[ch8core.sp as usize] = 0x0A;
+    ch8core.ram[(ch8core.sp+1) as usize] = 0xBC;
+    // load return instruction and execute
+    ch8core.load(&[0x00,0xEE]);
+    ch8core.exec_instruction();
+    // check state
+    assert_eq!(ch8core.sp, initial_sp-2);
+    assert_eq!(ch8core.pc, 0x0ABC);
+}

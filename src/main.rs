@@ -99,16 +99,29 @@ impl Chip8Core {
         let op = self.read_instruction();
         let nibbles = [op.nibble(1), op.nibble(2), op.nibble(3), op.nibble(4)];
         match &nibbles {
-            &[0,0,0xE,0] => {
-                self.clear_screen();
-                self.pc += 2;
-            }
+            // 00E0: Clear screen
+            &[0,0,0xE,0] => self.clear_screen(),
+            // 00EE: Return from subroutine
+            &[0,0,0xE,0xE] => self.return_from_subroutine(),
+            //
             _ => {}
         }
     }
 
     fn clear_screen(&mut self) {
-        (&mut self.ram[0xF00..0xFFF]).copy_from_slice(&[0;0xFF])
+        (&mut self.ram[0xF00..0xFFF]).copy_from_slice(&[0;0xFF]);
+        self.pc += 2;
+    }
+
+    fn return_from_subroutine(&mut self) {
+        let ret_addr = self.read_return_address();
+        self.pc = ret_addr;
+        self.sp -= 2;
+    }
+
+    // Read the return address the SP points to
+    fn read_return_address(&self) -> u16 {
+        BigEndian::read_u16(&self.ram[(self.sp as usize)..])
     }
 }
 
