@@ -17,3 +17,11 @@ fn load_data() {
     assert_eq!(ch8core.ram[0x203], 4);
     assert_eq!(ch8core.ram[0x204], 0);
 }
+
+#[test]
+fn test_read_instruction() {
+    let mut ch8core = Chip8Core::new();
+    let data: &[u8] = &[1,2];
+    ch8core.load(data);
+    assert_eq!(ch8core.read_instruction(), 0x0102);
+}

@@ -1,12 +1,16 @@
 #[cfg(test)]
 mod tests;
 
-extern crate clap;
+extern crate byteorder;     // to read instructions as big_endian u16 words
+extern crate clap;          // to manage command line options and arguments
 
+use byteorder::{BigEndian, ByteOrder};
 use clap::{Arg, App};
 use std::error::Error;
 use std::fs::File;
+use std::io::Cursor;
 use std::io::prelude::*;
+
 
 fn main() {
     // Define command line arguments.
@@ -70,6 +74,7 @@ impl Default for Chip8Core {
 
 // Methods for a Chip8Core
 impl Chip8Core {
+
     // Create a new Chip8Core instance
     fn new() -> Chip8Core {
         Default::default()
@@ -78,5 +83,11 @@ impl Chip8Core {
     // Load data onto RAM
     fn load(&mut self, data: &[u8]) {
         (&mut self.ram[0x200..(0x200+data.len())]).copy_from_slice(data);
+    }
+
+    // Read next instruction
+    fn read_instruction(&self) -> u16 {
+        let pointer = &self.ram[(self.pc as usize) ..];
+        BigEndian::read_u16(pointer)
     }
 }
