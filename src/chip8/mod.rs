@@ -78,7 +78,7 @@ impl Chip8State {
             // 4xkk: Skip next instruction if Vx != kk
             &[4,x,k1,k2] => self.skip_if_not_equals_immediate(x, u8_from_nibbles(k1, k2)),
             // 5xy0: Skip next instruction if Vx = Vy
-            &[5,x,y,0] => self.skip_if_equals_registers(x, y),
+            &[5,x,y,0] => self.skip_if_registers_equal(x, y),
             // 6xkk: Put the value kk into register Vx
             &[6,x,k1,k2] => self.load_immediate(x, u8_from_nibbles(k1, k2)),
             // 7xkk: Add the value kk to register Vx
@@ -101,6 +101,8 @@ impl Chip8State {
             &[8,x,y,7] => self.subn_registers(x, y),
             // 8xyE: Set Vx = Vx SHL 1
             &[8,x,_,0xE] => self.shl_register(x),
+            // 9xy0: Skip next instruction if Vx != Vy
+            &[9,x,y,0] => self.skip_if_registers_not_equal(x, y),
             // Panic if unknown
             _ => panic!("Unknown instruction: {:?}", op)
         }
@@ -166,13 +168,25 @@ impl Chip8State {
         new_state
     }
 
-    fn skip_if_equals_registers(&self, vx: u8, vy: u8) -> Chip8State {
+    fn skip_if_registers_equal(&self, vx: u8, vy: u8) -> Chip8State {
         let mut new_state = *self;
         let vx_value = self.reg[vx as usize];
         let vy_value = self.reg[vy as usize];
         // Increment PC, once more if values equal
         new_state.pc += 2;
         if vx_value == vy_value {
+            new_state.pc += 2;
+        }
+        new_state
+    }
+
+    fn skip_if_registers_not_equal(&self, vx: u8, vy: u8) -> Chip8State {
+        let mut new_state = *self;
+        let vx_value = self.reg[vx as usize];
+        let vy_value = self.reg[vy as usize];
+        // Increment PC, once more if values not equal
+        new_state.pc += 2;
+        if vx_value != vy_value {
             new_state.pc += 2;
         }
         new_state
