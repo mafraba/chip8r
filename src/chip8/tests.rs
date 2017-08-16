@@ -240,3 +240,18 @@ fn and_register() {
     assert_eq!(ch8state.reg[0], 0x03, "Incorrect register value");
     assert_eq!(ch8state.reg[1], 0x01, "Incorrect register value");
 }
+
+#[test]
+fn xor_register() {
+    let mut ch8state = Chip8State::new();
+    // load return instruction and execute
+    ch8state = ch8state.load(&[0x81,0x03]);
+    ch8state.reg[0] = 0x03;
+    ch8state.reg[1] = 0x11;
+    let pc_pre = ch8state.pc;
+    ch8state = ch8state.exec_instruction();
+    // check state
+    assert_eq!(ch8state.pc, pc_pre+2, "Incorrect program counter");
+    assert_eq!(ch8state.reg[0], 0x03, "Incorrect register value");
+    assert_eq!(ch8state.reg[1], 0x12, "Incorrect register value");
+}

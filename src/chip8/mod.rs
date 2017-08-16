@@ -89,6 +89,8 @@ impl Chip8State {
             &[8,x,y,1] => self.or_register(x, y),
             // 8xy2: Performs a bitwise AND on the values of Vx and Vy, then stores the result in Vx
             &[8,x,y,2] => self.and_register(x, y),
+            // 8xy3: Performs a bitwise XOR on the values of Vx and Vy, then stores the result in Vx
+            &[8,x,y,3] => self.xor_register(x, y),
             // Panic if unknown
             _ => panic!("Unknown instruction: {:?}", op)
         }
@@ -199,6 +201,13 @@ impl Chip8State {
     fn and_register(&self, reg1: u8, reg2: u8) -> Chip8State {
         let mut new_state = *self;
         new_state.reg[reg1 as usize] &= new_state.reg[reg2 as usize];
+        new_state.pc += 2;
+        new_state
+    }
+
+    fn xor_register(&self, reg1: u8, reg2: u8) -> Chip8State {
+        let mut new_state = *self;
+        new_state.reg[reg1 as usize] ^= new_state.reg[reg2 as usize];
         new_state.pc += 2;
         new_state
     }
