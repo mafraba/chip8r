@@ -99,6 +99,8 @@ impl Chip8State {
             &[8,x,_,6] => self.shr_register(x),
             // 8xy7: Set Vx = Vy - Vx, set VF = (Vy>Vx)
             &[8,x,y,7] => self.subn_registers(x, y),
+            // 8xyE: Set Vx = Vx SHL 1
+            &[8,x,_,0xE] => self.shl_register(x),
             // Panic if unknown
             _ => panic!("Unknown instruction: {:?}", op)
         }
@@ -265,6 +267,16 @@ impl Chip8State {
         let x = new_state.reg[vx as usize];
         new_state.reg[0xF] = x & 1;
         new_state.reg[vx as usize] = x >> 1;
+        new_state.pc += 2;
+        new_state
+    }
+
+    // VF is set to the most-significant bit of Vx. Then Vx is multiplied by 2.
+    fn shl_register(&self, vx: u8) -> Chip8State {
+        let mut new_state = *self;
+        let x = new_state.reg[vx as usize];
+        new_state.reg[0xF] = x >> 7;
+        new_state.reg[vx as usize] = x << 1;
         new_state.pc += 2;
         new_state
     }
