@@ -218,16 +218,11 @@ impl Chip8State {
     // VF is set to 1, otherwise 0. Only the lowest 8 bits of the result are kept, and stored in Vx
     fn add_registers(&self, reg1: u8, reg2: u8) -> Chip8State {
         let mut new_state = *self;
-        let mut r = new_state.reg[reg1 as usize] as u16;
-        r += new_state.reg[reg2 as usize] as u16;
-        // take just lowest byte
-        new_state.reg[reg1 as usize] = (r & 0xFF) as u8;
-        // signal carry
-        if r & 0xFF00 != 0 {
-            new_state.reg[0xF] = 1;
-        } else {
-            new_state.reg[0xF] = 0;
-        }
+        let r1 = new_state.reg[reg1 as usize];
+        let r2 = new_state.reg[reg2 as usize];
+        let (sum, carry) = r1.overflowing_add(r2);
+        new_state.reg[reg1 as usize] = sum;
+        new_state.reg[0xF] = carry as u8;
         new_state.pc += 2;
         new_state
     }
