@@ -287,3 +287,35 @@ fn add_registers_carry() {
     assert_eq!(ch8state.reg[1], 0x02, "Incorrect register value");
     assert_eq!(ch8state.reg[0xF], 1, "Incorrect register value");
 }
+
+#[test]
+fn sub_registers_borrow() {
+    let mut ch8state = Chip8State::new();
+    // load return instruction and execute
+    ch8state = ch8state.load(&[0x81,0x05]);
+    ch8state.reg[0] = 1;
+    ch8state.reg[1] = 0;
+    let pc_pre = ch8state.pc;
+    ch8state = ch8state.exec_instruction();
+    // check state
+    assert_eq!(ch8state.pc, pc_pre+2, "Incorrect program counter");
+    assert_eq!(ch8state.reg[0], 1, "Incorrect register value");
+    assert_eq!(ch8state.reg[1], 0xFF, "Incorrect register value");
+    assert_eq!(ch8state.reg[0xF], 0, "Incorrect register value");
+}
+
+#[test]
+fn sub_registers_no_borrow() {
+    let mut ch8state = Chip8State::new();
+    // load return instruction and execute
+    ch8state = ch8state.load(&[0x81,0x05]);
+    ch8state.reg[0] = 1;
+    ch8state.reg[1] = 3;
+    let pc_pre = ch8state.pc;
+    ch8state = ch8state.exec_instruction();
+    // check state
+    assert_eq!(ch8state.pc, pc_pre+2, "Incorrect program counter");
+    assert_eq!(ch8state.reg[0], 1, "Incorrect register value");
+    assert_eq!(ch8state.reg[1], 2, "Incorrect register value");
+    assert_eq!(ch8state.reg[0xF], 1, "Incorrect register value");
+}

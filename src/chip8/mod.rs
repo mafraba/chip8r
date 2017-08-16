@@ -93,6 +93,8 @@ impl Chip8State {
             &[8,x,y,3] => self.xor_registers(x, y),
             // 8xy4: Set Vx = Vx + Vy, set VF = carry
             &[8,x,y,4] => self.add_registers(x, y),
+            // 8xy5: Set Vx = Vx + Vy, set VF = carry
+            &[8,x,y,5] => self.sub_registers(x, y),
             // Panic if unknown
             _ => panic!("Unknown instruction: {:?}", op)
         }
@@ -223,6 +225,19 @@ impl Chip8State {
         let (sum, carry) = r1.overflowing_add(r2);
         new_state.reg[reg1 as usize] = sum;
         new_state.reg[0xF] = carry as u8;
+        new_state.pc += 2;
+        new_state
+    }
+
+    // If Vx > Vy, then VF is set to 1, otherwise 0. Then Vy is subtracted from Vx,
+    // and the results stored in Vx
+    fn sub_registers(&self, vx: u8, vy: u8) -> Chip8State {
+        let mut new_state = *self;
+        let x = new_state.reg[vx as usize];
+        let y = new_state.reg[vy as usize];
+        new_state.reg[0xF] = (x > y) as u8;
+        let (sub, _) = x.overflowing_sub(y);
+        new_state.reg[vx as usize] = sub;
         new_state.pc += 2;
         new_state
     }
