@@ -169,3 +169,16 @@ fn skip_if_equals_registers_negative() {
     // check state
     assert_eq!(ch8state.pc, pc_pre+2, "Incorrect PC register value");
 }
+
+#[test]
+fn load_immediate() {
+    let mut ch8state = Chip8State::new();
+    // load return instruction and execute
+    ch8state = ch8state.load(&[0x60,0x12]);
+    assert_eq!(ch8state.reg[0], 0);
+    let pc_pre = ch8state.pc;
+    ch8state = ch8state.exec_instruction();
+    // check state
+    assert_eq!(ch8state.pc, pc_pre+2, "Incorrect program counter");
+    assert_eq!(ch8state.reg[0], 0x12, "Incorrect register value");
+}

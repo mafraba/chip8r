@@ -79,6 +79,8 @@ impl Chip8State {
             &[4,x,k1,k2] => self.skip_if_not_equals_immediate(x, u8_from_nibbles(k1, k2)),
             // 5xy0: Skip next instruction if Vx = Vy
             &[5,x,y,0] => self.skip_if_equals_registers(x, y),
+            // 6xkk: Put the value kk into register Vx
+            &[6,x,k1,k2] => self.load_immediate(x, u8_from_nibbles(k1, k2)),
             // Panic if unknown
             _ => panic!("Unknown instruction: {:?}", op)
         }
@@ -153,6 +155,13 @@ impl Chip8State {
         if reg1_value == reg2_value {
             new_state.pc += 2;
         }
+        new_state
+    }
+
+    fn load_immediate(&self, reg_index: u8, value: u8) -> Chip8State {
+        let mut new_state = *self;
+        new_state.reg[reg_index as usize] = value;
+        new_state.pc += 2;
         new_state
     }
 }
