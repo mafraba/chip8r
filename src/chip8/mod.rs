@@ -160,13 +160,13 @@ impl Chip8State {
         new_state
     }
 
-    fn skip_if_equals_registers(&self, reg1: u8, reg2: u8) -> Chip8State {
+    fn skip_if_equals_registers(&self, vx: u8, vy: u8) -> Chip8State {
         let mut new_state = *self;
-        let reg1_value = self.reg[reg1 as usize];
-        let reg2_value = self.reg[reg2 as usize];
+        let vx_value = self.reg[vx as usize];
+        let vy_value = self.reg[vy as usize];
         // Increment PC, once more if values equal
         new_state.pc += 2;
-        if reg1_value == reg2_value {
+        if vx_value == vy_value {
             new_state.pc += 2;
         }
         new_state
@@ -188,42 +188,42 @@ impl Chip8State {
         new_state
     }
 
-    fn move_register(&self, reg1: u8, reg2: u8) -> Chip8State {
+    fn move_register(&self, vx: u8, vy: u8) -> Chip8State {
         let mut new_state = *self;
-        new_state.reg[reg1 as usize] = new_state.reg[reg2 as usize];
+        new_state.reg[vx as usize] = new_state.reg[vy as usize];
         new_state.pc += 2;
         new_state
     }
 
-    fn or_registers(&self, reg1: u8, reg2: u8) -> Chip8State {
+    fn or_registers(&self, vx: u8, vy: u8) -> Chip8State {
         let mut new_state = *self;
-        new_state.reg[reg1 as usize] |= new_state.reg[reg2 as usize];
+        new_state.reg[vx as usize] |= new_state.reg[vy as usize];
         new_state.pc += 2;
         new_state
     }
 
-    fn and_registers(&self, reg1: u8, reg2: u8) -> Chip8State {
+    fn and_registers(&self, vx: u8, vy: u8) -> Chip8State {
         let mut new_state = *self;
-        new_state.reg[reg1 as usize] &= new_state.reg[reg2 as usize];
+        new_state.reg[vx as usize] &= new_state.reg[vy as usize];
         new_state.pc += 2;
         new_state
     }
 
-    fn xor_registers(&self, reg1: u8, reg2: u8) -> Chip8State {
+    fn xor_registers(&self, vx: u8, vy: u8) -> Chip8State {
         let mut new_state = *self;
-        new_state.reg[reg1 as usize] ^= new_state.reg[reg2 as usize];
+        new_state.reg[vx as usize] ^= new_state.reg[vy as usize];
         new_state.pc += 2;
         new_state
     }
 
     // The values of Vx and Vy are added together. If the result is greater than 8 bits (>255)
     // VF is set to 1, otherwise 0. Only the lowest 8 bits of the result are kept, and stored in Vx
-    fn add_registers(&self, reg1: u8, reg2: u8) -> Chip8State {
+    fn add_registers(&self, vx: u8, vy: u8) -> Chip8State {
         let mut new_state = *self;
-        let r1 = new_state.reg[reg1 as usize];
-        let r2 = new_state.reg[reg2 as usize];
+        let r1 = new_state.reg[vx as usize];
+        let r2 = new_state.reg[vy as usize];
         let (sum, carry) = r1.overflowing_add(r2);
-        new_state.reg[reg1 as usize] = sum;
+        new_state.reg[vx as usize] = sum;
         new_state.reg[0xF] = carry as u8;
         new_state.pc += 2;
         new_state
