@@ -87,3 +87,15 @@ fn jump_instruction() {
     // check state
     assert_eq!(ch8state.pc, 0x0ABC);
 }
+
+#[test]
+fn call_instruction() {
+    let initial_ch8state = Chip8State::new();
+    // load return instruction and execute
+    let ch8state1 = initial_ch8state.load(&[0x2A,0xBC]);
+    let ch8state2 = ch8state1.exec_instruction();
+    // check state
+    assert_eq!(ch8state2.sp, ch8state1.sp+2, "Incorrect SP register value");
+    assert_eq!(ch8state2.read_return_address(), ch8state1.pc+2, "Incorrect return address");
+    assert_eq!(ch8state2.pc, 0xABC, "Incorrect PC value");
+}

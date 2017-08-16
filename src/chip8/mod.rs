@@ -70,7 +70,9 @@ impl Chip8State {
             // 00EE: Return from subroutine
             &[0,0,0xE,0xE] => self.return_from_subroutine(),
             // 1nnn: Jump to 'nnn' address
-            &[1,a1,a2,a3] => self.jump_to(((a1 as u16) << 8) | ((a2 as u16) << 4) | (a3 as u16)),
+            &[1,n1,n2,n3] => self.jump_to(compose_address(n1,n2,n3)),
+            // 2nnn: Call subroutine at 'nnn'
+            &[2,n1,n2,n3] => self.call_subroutine(compose_address(n1,n2,n3)),
             // Panic if unknown
             _ => panic!("Unknown instruction: {:?}", op)
         }
@@ -101,6 +103,18 @@ impl Chip8State {
         new_state.pc = addr;
         new_state
     }
+
+    fn call_subroutine(&self, subroutine_addr: u16) -> Chip8State {
+        let mut new_state = *self;
+        // stack return address
+        let return_address = self.pc + 2;
+        new_state.sp += 2;
+        new_state.ram[new_state.sp as usize] = (return_address >> 8) as u8;
+        new_state.ram[(new_state.sp + 1) as usize] = (return_address & 0xFF) as u8;
+        // set PC
+        new_state.pc = subroutine_addr;
+        new_state
+    }
 }
 
 // Chip8 instructions modeled as 16-bit unsigned integers
@@ -116,4 +130,8 @@ impl Chip8Instruction {
         let bits_to_shift = 4 * nibbles_to_shift;
         ((self.0 >> bits_to_shift) & 0xF) as u8
     }
+}
+
+fn compose_address(n1: u8, n2: u8, n3: u8) -> u16 {
+    (((n1 as u16) << 8) | ((n2 as u16) << 4) | n3 as u16)
 }
