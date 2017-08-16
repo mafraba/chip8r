@@ -93,10 +93,12 @@ impl Chip8State {
             &[8,x,y,3] => self.xor_registers(x, y),
             // 8xy4: Set Vx = Vx + Vy, set VF = carry
             &[8,x,y,4] => self.add_registers(x, y),
-            // 8xy5: Set Vx = Vx - Vy, set VF = (Vx>Vy
+            // 8xy5: Set Vx = Vx - Vy, set VF = (Vx>Vy)
             &[8,x,y,5] => self.sub_registers(x, y),
             // 8xy6: Set Vx = Vx SHR 1
             &[8,x,_,6] => self.shr_register(x),
+            // 8xy7: Set Vx = Vy - Vx, set VF = (Vy>Vx)
+            &[8,x,y,7] => self.subn_registers(x, y),
             // Panic if unknown
             _ => panic!("Unknown instruction: {:?}", op)
         }
@@ -239,6 +241,19 @@ impl Chip8State {
         let y = new_state.reg[vy as usize];
         new_state.reg[0xF] = (x > y) as u8;
         let (sub, _) = x.overflowing_sub(y);
+        new_state.reg[vx as usize] = sub;
+        new_state.pc += 2;
+        new_state
+    }
+
+    // If Vy > Vx, then VF is set to 1, otherwise 0. Then Vx is subtracted from Vy,
+    // and the results stored in Vx
+    fn subn_registers(&self, vx: u8, vy: u8) -> Chip8State {
+        let mut new_state = *self;
+        let x = new_state.reg[vx as usize];
+        let y = new_state.reg[vy as usize];
+        new_state.reg[0xF] = (y > x) as u8;
+        let (sub, _) = y.overflowing_sub(x);
         new_state.reg[vx as usize] = sub;
         new_state.pc += 2;
         new_state
