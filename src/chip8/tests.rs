@@ -146,3 +146,26 @@ fn SNEI_negative() {
     // check state
     assert_eq!(ch8state.pc, pc_pre+2, "Incorrect PC register value");
 }
+
+#[test]
+fn SER_positive() {
+    let mut ch8state = Chip8State::new();
+    // load return instruction and execute
+    ch8state = ch8state.load(&[0x50,0x10]);
+    let pc_pre = ch8state.pc;
+    ch8state = ch8state.exec_instruction();
+    // check state
+    assert_eq!(ch8state.pc, pc_pre+4, "Incorrect PC register value");
+}
+
+#[test]
+fn SER_negative() {
+    let mut ch8state = Chip8State::new();
+    // load return instruction and execute
+    ch8state = ch8state.load(&[0x50,0x10]);
+    ch8state.reg[0] = 1;
+    let pc_pre = ch8state.pc;
+    ch8state = ch8state.exec_instruction();
+    // check state
+    assert_eq!(ch8state.pc, pc_pre+2, "Incorrect PC register value");
+}

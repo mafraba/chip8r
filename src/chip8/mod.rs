@@ -77,6 +77,8 @@ impl Chip8State {
             &[3,x,k1,k2] => self.skip_if_equals_immediate(x, u8_from_nibbles(k1, k2)),
             // 4xkk: Skip next instruction if Vx != kk
             &[4,x,k1,k2] => self.skip_if_not_equals_immediate(x, u8_from_nibbles(k1, k2)),
+            // 5xy0: Skip next instruction if Vx = Vy
+            &[5,x,y,0] => self.skip_if_equals_registers(x, y),
             // Panic if unknown
             _ => panic!("Unknown instruction: {:?}", op)
         }
@@ -137,6 +139,18 @@ impl Chip8State {
         // Increment PC, once more if values not equal
         new_state.pc += 2;
         if reg_value != value {
+            new_state.pc += 2;
+        }
+        new_state
+    }
+
+    fn skip_if_equals_registers(&self, reg1: u8, reg2: u8) -> Chip8State {
+        let mut new_state = *self;
+        let reg1_value = self.reg[reg1 as usize];
+        let reg2_value = self.reg[reg2 as usize];
+        // Increment PC, once more if values equal
+        new_state.pc += 2;
+        if reg1_value == reg2_value {
             new_state.pc += 2;
         }
         new_state
