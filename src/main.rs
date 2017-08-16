@@ -6,7 +6,7 @@ extern crate clap;          // to manage command line options and arguments
 mod chip8;
 
 use clap::{Arg, App};
-use chip8::Chip8Core;
+use chip8::Chip8State;
 use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
@@ -37,10 +37,10 @@ fn main() {
     ch8_file.read_to_end(&mut ch8_buffer).expect("Failed to read ROM");
 
     // Create runtime
-    let mut ch8core = Chip8Core::new();
+    let mut ch8state = Chip8State::new();
 
     // Load file to memory
-    ch8core.load(&ch8_buffer);
+    ch8state = ch8state.load(&ch8_buffer);
 
     println!("To be continued ... :)");
 }

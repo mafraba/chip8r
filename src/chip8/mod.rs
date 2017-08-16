@@ -3,14 +3,9 @@ mod tests;
 
 use byteorder::{BigEndian, ByteOrder};
 
-// Implementation of a CHIP-8 runtime, consisting basically in a state and a set of operations
-pub struct Chip8Core {
-    state: Box<Chip8State>
-}
-
 // A Chip8 runtime state
 #[derive(Copy)]
-struct Chip8State {
+pub struct Chip8State {
     ram: [u8; 0x1000],  // 4K of memory
     reg: [u8; 16],      // 16 registers
     i: u16,             // Memory address register
@@ -35,40 +30,38 @@ impl Clone for Chip8State {
     }
 }
 
-// Methods for a Chip8Core
-impl Chip8Core {
+// Methods for a Chip8State
+impl Chip8State {
 
-    // Create a new Chip8Core instance
-    pub fn new() -> Chip8Core {
-        Chip8Core{
-            state: Box::new(Chip8State {
-                ram: [0; 0x1000],
-                reg: [0; 16],
-                i: 0,
-                sp: 0xEA0,
-                t_delay: 0,
-                t_sound: 0,
-                pc: 0x200
-            })
+    // Create a new Chip8State instance
+    pub fn new() -> Chip8State {
+        Chip8State {
+            ram: [0; 0x1000],
+            reg: [0; 16],
+            i: 0,
+            sp: 0xEA0,
+            t_delay: 0,
+            t_sound: 0,
+            pc: 0x200
         }
     }
 
-    // Load data onto RAM
-    pub fn load(&mut self, data: &[u8]) {
-        let mut new_state = *self.state;
+    // Load data onto RAM, return new state
+    pub fn load(&self, data: &[u8]) -> Chip8State {
+        let mut new_state = *self;
         (&mut new_state.ram[0x200..(0x200+data.len())]).copy_from_slice(data);
-        self.state = Box::new(new_state);
+        new_state
     }
 
     // Read next instruction
     fn read_instruction(&self) -> Chip8Instruction {
-        let pointer = &self.state.ram[(self.state.pc as usize) ..];
+        let pointer = &self.ram[(self.pc as usize) ..];
         let word = BigEndian::read_u16(pointer);
         Chip8Instruction(word)
     }
 
-    // Execute next instruction
-    fn exec_instruction(&mut self) {
+    // Execute next instruction, returning a new state
+    fn exec_instruction(&self) -> Chip8State {
         let op = self.read_instruction();
         let nibbles = [op.nibble(1), op.nibble(2), op.nibble(3), op.nibble(4)];
         match &nibbles {
@@ -78,35 +71,35 @@ impl Chip8Core {
             &[0,0,0xE,0xE] => self.return_from_subroutine(),
             // 1nnn: Jump to 'nnn' address
             &[1,a1,a2,a3] => self.jump_to(((a1 as u16) << 8) | ((a2 as u16) << 4) | (a3 as u16)),
-            //
-            _ => {}
+            // Panic if unknown
+            _ => panic!("Unknown instruction: {:?}", op)
         }
     }
 
-    fn clear_screen(&mut self) {
-        let mut new_state = *self.state;
+    fn clear_screen(&self) -> Chip8State {
+        let mut new_state = *self;
         (&mut new_state.ram[0xF00..0xFFF]).copy_from_slice(&[0;0xFF]);
         new_state.pc += 2;
-        self.state = Box::new(new_state);
+        new_state
     }
 
-    fn return_from_subroutine(&mut self) {
+    fn return_from_subroutine(&self) -> Chip8State {
         let ret_addr = self.read_return_address();
-        let mut new_state = *self.state;
+        let mut new_state = *self;
         new_state.pc = ret_addr;
         new_state.sp -= 2;
-        self.state = Box::new(new_state);
+        new_state
     }
 
     // Read the return address the SP points to
     fn read_return_address(&self) -> u16 {
-        BigEndian::read_u16(&self.state.ram[(self.state.sp as usize)..])
+        BigEndian::read_u16(&self.ram[(self.sp as usize)..])
     }
 
-    fn jump_to(&mut self, addr: u16) {
-        let mut new_state = *self.state;
+    fn jump_to(&self, addr: u16) -> Chip8State {
+        let mut new_state = *self;
         new_state.pc = addr;
-        self.state = Box::new(new_state);
+        new_state
     }
 }
 
