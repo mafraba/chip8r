@@ -93,8 +93,10 @@ impl Chip8State {
             &[8,x,y,3] => self.xor_registers(x, y),
             // 8xy4: Set Vx = Vx + Vy, set VF = carry
             &[8,x,y,4] => self.add_registers(x, y),
-            // 8xy5: Set Vx = Vx + Vy, set VF = carry
+            // 8xy5: Set Vx = Vx - Vy, set VF = (Vx>Vy
             &[8,x,y,5] => self.sub_registers(x, y),
+            // 8xy6: Set Vx = Vx SHR 1
+            &[8,x,_,6] => self.shr_register(x),
             // Panic if unknown
             _ => panic!("Unknown instruction: {:?}", op)
         }
@@ -238,6 +240,16 @@ impl Chip8State {
         new_state.reg[0xF] = (x > y) as u8;
         let (sub, _) = x.overflowing_sub(y);
         new_state.reg[vx as usize] = sub;
+        new_state.pc += 2;
+        new_state
+    }
+
+    // VF is set to the least-significant bit of Vx. Then Vx is divided by 2.
+    fn shr_register(&self, vx: u8) -> Chip8State {
+        let mut new_state = *self;
+        let x = new_state.reg[vx as usize];
+        new_state.reg[0xF] = x & 1;
+        new_state.reg[vx as usize] = x >> 1;
         new_state.pc += 2;
         new_state
     }
