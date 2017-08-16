@@ -101,7 +101,7 @@ fn call_instruction() {
 }
 
 #[test]
-fn SEI_positive() {
+fn skip_if_equals_immediate_positive() {
     let mut ch8state = Chip8State::new();
     // load return instruction and execute
     ch8state = ch8state.load(&[0x30,0x12]);
@@ -113,7 +113,7 @@ fn SEI_positive() {
 }
 
 #[test]
-fn SEI_negative() {
+fn skip_if_equals_immediate_negative() {
     let mut ch8state = Chip8State::new();
     // load return instruction and execute
     ch8state = ch8state.load(&[0x30,0x12]);
@@ -125,7 +125,7 @@ fn SEI_negative() {
 }
 
 #[test]
-fn SNEI_positive() {
+fn skip_if_not_equals_immediate_positive() {
     let mut ch8state = Chip8State::new();
     // load return instruction and execute
     ch8state = ch8state.load(&[0x40,0x12]);
@@ -136,7 +136,7 @@ fn SNEI_positive() {
 }
 
 #[test]
-fn SNEI_negative() {
+fn skip_if_not_equals_immediate_negative() {
     let mut ch8state = Chip8State::new();
     // load return instruction and execute
     ch8state = ch8state.load(&[0x40,0x12]);
@@ -148,7 +148,7 @@ fn SNEI_negative() {
 }
 
 #[test]
-fn SER_positive() {
+fn skip_if_equals_registers_positive() {
     let mut ch8state = Chip8State::new();
     // load return instruction and execute
     ch8state = ch8state.load(&[0x50,0x10]);
@@ -159,7 +159,7 @@ fn SER_positive() {
 }
 
 #[test]
-fn SER_negative() {
+fn skip_if_equals_registers_negative() {
     let mut ch8state = Chip8State::new();
     // load return instruction and execute
     ch8state = ch8state.load(&[0x50,0x10]);
