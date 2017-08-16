@@ -86,11 +86,13 @@ impl Chip8State {
             // 8xy0: Store the value of register Vy in register Vx
             &[8,x,y,0] => self.move_register(x, y),
             // 8xy1: Performs a bitwise OR on the values of Vx and Vy, then stores the result in Vx
-            &[8,x,y,1] => self.or_register(x, y),
+            &[8,x,y,1] => self.or_registers(x, y),
             // 8xy2: Performs a bitwise AND on the values of Vx and Vy, then stores the result in Vx
-            &[8,x,y,2] => self.and_register(x, y),
+            &[8,x,y,2] => self.and_registers(x, y),
             // 8xy3: Performs a bitwise XOR on the values of Vx and Vy, then stores the result in Vx
-            &[8,x,y,3] => self.xor_register(x, y),
+            &[8,x,y,3] => self.xor_registers(x, y),
+            // 8xy4: Set Vx = Vx + Vy, set VF = carry
+            &[8,x,y,4] => self.add_registers(x, y),
             // Panic if unknown
             _ => panic!("Unknown instruction: {:?}", op)
         }
@@ -191,23 +193,41 @@ impl Chip8State {
         new_state
     }
 
-    fn or_register(&self, reg1: u8, reg2: u8) -> Chip8State {
+    fn or_registers(&self, reg1: u8, reg2: u8) -> Chip8State {
         let mut new_state = *self;
         new_state.reg[reg1 as usize] |= new_state.reg[reg2 as usize];
         new_state.pc += 2;
         new_state
     }
 
-    fn and_register(&self, reg1: u8, reg2: u8) -> Chip8State {
+    fn and_registers(&self, reg1: u8, reg2: u8) -> Chip8State {
         let mut new_state = *self;
         new_state.reg[reg1 as usize] &= new_state.reg[reg2 as usize];
         new_state.pc += 2;
         new_state
     }
 
-    fn xor_register(&self, reg1: u8, reg2: u8) -> Chip8State {
+    fn xor_registers(&self, reg1: u8, reg2: u8) -> Chip8State {
         let mut new_state = *self;
         new_state.reg[reg1 as usize] ^= new_state.reg[reg2 as usize];
+        new_state.pc += 2;
+        new_state
+    }
+
+    // The values of Vx and Vy are added together. If the result is greater than 8 bits (>255)
+    // VF is set to 1, otherwise 0. Only the lowest 8 bits of the result are kept, and stored in Vx
+    fn add_registers(&self, reg1: u8, reg2: u8) -> Chip8State {
+        let mut new_state = *self;
+        let mut r = new_state.reg[reg1 as usize] as u16;
+        r += new_state.reg[reg2 as usize] as u16;
+        // take just lowest byte
+        new_state.reg[reg1 as usize] = (r & 0xFF) as u8;
+        // signal carry
+        if r & 0xFF00 != 0 {
+            new_state.reg[0xF] = 1;
+        } else {
+            new_state.reg[0xF] = 0;
+        }
         new_state.pc += 2;
         new_state
     }
