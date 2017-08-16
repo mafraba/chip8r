@@ -83,6 +83,8 @@ impl Chip8State {
             &[6,x,k1,k2] => self.load_immediate(x, u8_from_nibbles(k1, k2)),
             // 7xkk: Add the value kk to register Vx
             &[7,x,k1,k2] => self.add_immediate(x, u8_from_nibbles(k1, k2)),
+            // 8xy0: Store the value of register Vy in register Vx
+            &[8,x,y,0] => self.move_register(x, y),
             // Panic if unknown
             _ => panic!("Unknown instruction: {:?}", op)
         }
@@ -172,6 +174,13 @@ impl Chip8State {
         let mut new_state = *self;
         let current = new_state.reg[reg_index as usize];
         new_state.reg[reg_index as usize] = current + value;
+        new_state.pc += 2;
+        new_state
+    }
+
+    fn move_register(&self, reg1: u8, reg2: u8) -> Chip8State {
+        let mut new_state = *self;
+        new_state.reg[reg1 as usize] = new_state.reg[reg2 as usize];
         new_state.pc += 2;
         new_state
     }
