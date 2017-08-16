@@ -85,6 +85,8 @@ impl Chip8State {
             &[7,x,k1,k2] => self.add_immediate(x, u8_from_nibbles(k1, k2)),
             // 8xy0: Store the value of register Vy in register Vx
             &[8,x,y,0] => self.move_register(x, y),
+            // 8xy1: Performs a bitwise OR on the values of Vx and Vy, then stores the result in Vx
+            &[8,x,y,1] => self.or_register(x, y),
             // Panic if unknown
             _ => panic!("Unknown instruction: {:?}", op)
         }
@@ -181,6 +183,13 @@ impl Chip8State {
     fn move_register(&self, reg1: u8, reg2: u8) -> Chip8State {
         let mut new_state = *self;
         new_state.reg[reg1 as usize] = new_state.reg[reg2 as usize];
+        new_state.pc += 2;
+        new_state
+    }
+
+    fn or_register(&self, reg1: u8, reg2: u8) -> Chip8State {
+        let mut new_state = *self;
+        new_state.reg[reg1 as usize] |= new_state.reg[reg2 as usize];
         new_state.pc += 2;
         new_state
     }
