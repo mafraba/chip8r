@@ -101,7 +101,7 @@ fn call_instruction() {
 }
 
 #[test]
-fn skip_if_equals_positive() {
+fn SEI_positive() {
     let mut ch8state = Chip8State::new();
     // load return instruction and execute
     ch8state = ch8state.load(&[0x30,0x12]);
@@ -113,11 +113,34 @@ fn skip_if_equals_positive() {
 }
 
 #[test]
-fn skip_if_equals_negative() {
+fn SEI_negative() {
     let mut ch8state = Chip8State::new();
     // load return instruction and execute
     ch8state = ch8state.load(&[0x30,0x12]);
     // ch8state.reg[0] = 0x00;
+    let pc_pre = ch8state.pc;
+    ch8state = ch8state.exec_instruction();
+    // check state
+    assert_eq!(ch8state.pc, pc_pre+2, "Incorrect PC register value");
+}
+
+#[test]
+fn SNEI_positive() {
+    let mut ch8state = Chip8State::new();
+    // load return instruction and execute
+    ch8state = ch8state.load(&[0x40,0x12]);
+    let pc_pre = ch8state.pc;
+    ch8state = ch8state.exec_instruction();
+    // check state
+    assert_eq!(ch8state.pc, pc_pre+4, "Incorrect PC register value");
+}
+
+#[test]
+fn SNEI_negative() {
+    let mut ch8state = Chip8State::new();
+    // load return instruction and execute
+    ch8state = ch8state.load(&[0x40,0x12]);
+    ch8state.reg[0] = 0x12;
     let pc_pre = ch8state.pc;
     ch8state = ch8state.exec_instruction();
     // check state

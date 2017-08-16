@@ -70,11 +70,13 @@ impl Chip8State {
             // 00EE: Return from subroutine
             &[0,0,0xE,0xE] => self.return_from_subroutine(),
             // 1nnn: Jump to 'nnn' address
-            &[1,n1,n2,n3] => self.jump_to(u16_from_nibbles(0,n1,n2,n3)),
+            &[1,n1,n2,n3] => self.jump_to(u16_from_nibbles(0, n1, n2, n3)),
             // 2nnn: Call subroutine at 'nnn'
-            &[2,n1,n2,n3] => self.call_subroutine(u16_from_nibbles(0,n1,n2,n3)),
-            // 3xkk: Skip next instruction if Vx = kk
-            &[3,x,k1,k2] => self.skip_if_equals(x,u8_from_nibbles(k1,k2)),
+            &[2,n1,n2,n3] => self.call_subroutine(u16_from_nibbles(0, n1, n2, n3)),
+            // 3xkk: Skip next instruction if Vx == kk
+            &[3,x,k1,k2] => self.skip_if_equals_immediate(x, u8_from_nibbles(k1, k2)),
+            // 4xkk: Skip next instruction if Vx != kk
+            &[4,x,k1,k2] => self.skip_if_not_equals_immediate(x, u8_from_nibbles(k1, k2)),
             // Panic if unknown
             _ => panic!("Unknown instruction: {:?}", op)
         }
@@ -118,12 +120,23 @@ impl Chip8State {
         new_state
     }
 
-    fn skip_if_equals(&self, reg_index: u8, value: u8) -> Chip8State {
+    fn skip_if_equals_immediate(&self, reg_index: u8, value: u8) -> Chip8State {
         let mut new_state = *self;
         let reg_value = self.reg[reg_index as usize];
         // Increment PC, once more if values equal
         new_state.pc += 2;
         if reg_value == value {
+            new_state.pc += 2;
+        }
+        new_state
+    }
+
+    fn skip_if_not_equals_immediate(&self, reg_index: u8, value: u8) -> Chip8State {
+        let mut new_state = *self;
+        let reg_value = self.reg[reg_index as usize];
+        // Increment PC, once more if values not equal
+        new_state.pc += 2;
+        if reg_value != value {
             new_state.pc += 2;
         }
         new_state
