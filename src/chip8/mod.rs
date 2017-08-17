@@ -107,6 +107,8 @@ impl Chip8State {
             &[0xA,n1,n2,n3] => self.set_i(u16_from_nibbles(0, n1, n2, n3)),
             // Bnnn: Jump to location nnn + V0
             &[0xB,n1,n2,n3] => self.indexed_jump(u16_from_nibbles(0, n1, n2, n3)),
+            // Cxkk: Set Vx = random byte AND kk
+            &[0xC,x,k1,k2] => self.masked_random(x, u8_from_nibbles(k1, k2)),
             // Panic if unknown
             _ => panic!("Unknown instruction: {:?}", op)
         }
@@ -308,6 +310,14 @@ impl Chip8State {
     fn set_i(&self, n: u16) -> Chip8State {
         let mut new_state = *self;
         new_state.i = n;
+        new_state.pc += 2;
+        new_state
+    }
+
+    fn masked_random(&self, vx: u8, mask: u8) -> Chip8State {
+        let mut new_state = *self;
+        let random = ::rand::random::<u8>();
+        new_state.reg[vx as usize] = random & mask;
         new_state.pc += 2;
         new_state
     }

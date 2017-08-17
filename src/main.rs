@@ -2,6 +2,7 @@
 
 extern crate byteorder;     // to read instructions as big_endian u16 words
 extern crate clap;          // to manage command line options and arguments
+extern crate rand;          // to generate random numbers
 
 mod chip8;
 

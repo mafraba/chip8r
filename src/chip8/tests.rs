@@ -454,3 +454,16 @@ fn set_i() {
     assert_eq!(ch8state.pc, pc_pre+2, "Incorrect program counter");
     assert_eq!(ch8state.i, 0x123, "Incorrect register value");
 }
+
+#[test]
+fn masked_random() {
+    let mut ch8state = Chip8State::new();
+    // load instruction and execute
+    ch8state = ch8state.load(&[0xC0,0x0F]);
+    ch8state.reg[0] = 0xFF;
+    let pc_pre = ch8state.pc;
+    ch8state = ch8state.exec_instruction();
+    // check state
+    assert_eq!(ch8state.pc, pc_pre+2, "Incorrect program counter");
+    assert!(ch8state.reg[0] <= 0xF, "Incorrect register value");
+}
