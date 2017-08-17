@@ -430,3 +430,16 @@ fn shl_register_carry() {
     assert_eq!(ch8state.reg[0], 6, "Incorrect register value");
     assert_eq!(ch8state.reg[0xF], 1, "Incorrect register value");
 }
+
+#[test]
+fn set_i() {
+    let mut ch8state = Chip8State::new();
+    // load instruction and execute
+    ch8state = ch8state.load(&[0xA1,0x23]);
+    assert_eq!(ch8state.i, 0);
+    let pc_pre = ch8state.pc;
+    ch8state = ch8state.exec_instruction();
+    // check state
+    assert_eq!(ch8state.pc, pc_pre+2, "Incorrect program counter");
+    assert_eq!(ch8state.i, 0x123, "Incorrect register value");
+}

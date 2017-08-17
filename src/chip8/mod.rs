@@ -103,6 +103,8 @@ impl Chip8State {
             &[8,x,_,0xE] => self.shl_register(x),
             // 9xy0: Skip next instruction if Vx != Vy
             &[9,x,y,0] => self.skip_if_registers_not_equal(x, y),
+            // Annn: Set I = nnn
+            &[0xA,n1,n2,n3] => self.set_i(u16_from_nibbles(0, n1, n2, n3)),
             // Panic if unknown
             _ => panic!("Unknown instruction: {:?}", op)
         }
@@ -291,6 +293,13 @@ impl Chip8State {
         let x = new_state.reg[vx as usize];
         new_state.reg[0xF] = x >> 7;
         new_state.reg[vx as usize] = x << 1;
+        new_state.pc += 2;
+        new_state
+    }
+
+    fn set_i(&self, n: u16) -> Chip8State {
+        let mut new_state = *self;
+        new_state.i = n;
         new_state.pc += 2;
         new_state
     }
