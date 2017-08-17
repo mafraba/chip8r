@@ -46,6 +46,14 @@ impl Chip8Display {
         }
         collision
     }
+
+    fn draw_sprite(&mut self, row: u8, col: u8, bytes: &[u8]) -> bool {
+        let mut collision = false;
+        for (index, byte) in bytes.iter().enumerate() {
+            collision |= self.draw_byte(row + (index as u8), col, *byte);
+        }
+        collision
+    }
 }
 
 fn pixel_index(row: u8, col: u8) -> usize {
@@ -113,5 +121,30 @@ mod tests {
                 }
             }
         }
+    }
+
+    // Sprite map   Binary      Hex
+    // X.XXX.X.     0b10111010  $BA
+    // .XXXXX..     0b01111100  $7C
+    // XX.X.XX.     0b11010110  $D6
+    // XXXXXXX.     0b11111110  $FE
+    // .X.X.X..     0b01010100  $54
+    // X.X.X.X.     0b10101010  $AA
+    const ALIEN_SPRITE : &[u8] = &[0xBA, 0x7C, 0xD6, 0xFE, 0x54, 0xAA];
+
+    #[test]
+    fn draw_sprite_no_collision() {
+        let mut d = Chip8Display::new();
+        let collision = d.draw_sprite(0, 0, ALIEN_SPRITE);
+        assert_eq!(collision, false);
+    }
+
+    #[test]
+    fn draw_sprite_with_collision() {
+        let mut d = Chip8Display::new();
+        let mut collision = d.draw_sprite(0, 0, ALIEN_SPRITE);
+        assert_eq!(collision, false);
+        collision = d.draw_sprite(1, 1, ALIEN_SPRITE);
+        assert_eq!(collision, true);
     }
 }
