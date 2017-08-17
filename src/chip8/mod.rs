@@ -105,6 +105,8 @@ impl Chip8State {
             &[9,x,y,0] => self.skip_if_registers_not_equal(x, y),
             // Annn: Set I = nnn
             &[0xA,n1,n2,n3] => self.set_i(u16_from_nibbles(0, n1, n2, n3)),
+            // Bnnn: Jump to location nnn + V0
+            &[0xB,n1,n2,n3] => self.indexed_jump(u16_from_nibbles(0, n1, n2, n3)),
             // Panic if unknown
             _ => panic!("Unknown instruction: {:?}", op)
         }
@@ -133,6 +135,12 @@ impl Chip8State {
     fn jump_to(&self, addr: u16) -> Chip8State {
         let mut new_state = *self;
         new_state.pc = addr;
+        new_state
+    }
+
+    fn indexed_jump(&self, addr: u16) -> Chip8State {
+        let mut new_state = *self;
+        new_state.pc = addr + new_state.reg[0] as u16;
         new_state
     }
 

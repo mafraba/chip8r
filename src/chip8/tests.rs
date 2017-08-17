@@ -89,6 +89,17 @@ fn jump_instruction() {
 }
 
 #[test]
+fn indexed_jump_instruction() {
+    let mut ch8state = Chip8State::new();
+    // load return instruction and execute
+    ch8state = ch8state.load(&[0xBA,0xB0]);
+    ch8state.reg[0] = 0xC;
+    ch8state = ch8state.exec_instruction();
+    // check state
+    assert_eq!(ch8state.pc, 0x0ABC);
+}
+
+#[test]
 fn call_instruction() {
     let initial_ch8state = Chip8State::new();
     // load return instruction and execute
