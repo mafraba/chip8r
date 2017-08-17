@@ -123,7 +123,7 @@ impl Chip8State {
 
     fn clear_screen(&self) -> Chip8State {
         let mut new_state = *self;
-        unimplemented!();
+        new_state.display = display::Chip8Display::new();
         new_state.pc += 2;
         new_state
     }

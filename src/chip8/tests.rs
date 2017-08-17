@@ -39,12 +39,27 @@ fn nibble_extraction() {
 #[test]
 fn clear_screen_instruction() {
     let mut ch8state = Chip8State::new();
-    // load a single CLS instruction
-    let data: &[u8] = &[0x00,0xE0];
-    ch8state = ch8state.load(data);
-    assert_eq!(ch8state.read_instruction(), Chip8Instruction(0x00E0));
     // put some garbage on display buffer
-    unimplemented!();
+    {
+        let alien_sprite = &[0xBA, 0x7C, 0xD6, 0xFE, 0x54, 0xAA];
+        // put the sprite in 0x300
+        (&mut ch8state.ram[0x300..(0x300+alien_sprite.len())]).copy_from_slice(alien_sprite);
+        // set I to 0x300
+        ch8state.i = 0x300;
+        // load instruction to draw + to clear
+        ch8state = ch8state.load(&[0xD0, 0x16, 0x00, 0xE0]);
+        // run draw
+        ch8state = ch8state.exec_instruction();
+        assert_eq!(ch8state.display.get_pixel(0,0), true);
+    }
+    // run cls
+    assert_eq!(ch8state.read_instruction(), Chip8Instruction(0x00E0));
+    ch8state = ch8state.exec_instruction();
+    for c in 0..64 {
+        for r in 0..32 {
+            assert_eq!(ch8state.display.get_pixel(c,r), false);
+        }
+    }
 }
 
 #[test]
