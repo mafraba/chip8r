@@ -3,29 +3,38 @@ const TOTAL_ROWS: usize = 32;
 const TOTAL_PIXELS: usize = TOTAL_ROWS*TOTAL_COLS;
 
 // A 64x32 binary pixels display for CHIP8
-struct Chip8Display {
+#[derive(Copy)]
+pub struct Chip8Display {
     pixels: [bool; TOTAL_PIXELS]
+}
+
+impl Clone for Chip8Display {
+    fn clone(&self) -> Self {
+        Chip8Display{
+            pixels: self.pixels,
+        }
+    }
 }
 
 impl Chip8Display {
 
-    fn new() -> Chip8Display {
+    pub fn new() -> Chip8Display {
         Chip8Display{ pixels: [false; TOTAL_PIXELS] }
     }
 
-    fn get_pixel(&self, row: u8, col: u8) -> bool {
-        self.pixels[pixel_index(row, col)]
+    pub fn get_pixel(&self, col: u8, row: u8) -> bool {
+        self.pixels[pixel_index(col, row)]
     }
 
-    fn flip_pixel(&mut self, row: u8, col: u8) -> bool {
-        let idx = pixel_index(row, col);
-        let prev = self.get_pixel(row, col);
+    fn flip_pixel(&mut self, col: u8, row: u8) -> bool {
+        let idx = pixel_index(col, row);
+        let prev = self.get_pixel(col, row);
         self.pixels[idx] = !prev;
         prev
     }
 
     // Draw a byte (as part of a sprite)
-    fn draw_byte(&mut self, row: u8, col: u8, byte: u8) -> bool {
+    fn draw_byte(&mut self, col: u8, row: u8, byte: u8) -> bool {
         let mut collision = false;
         let bits: [bool; 8] = [
             (byte & 0x80) != 0,
@@ -41,22 +50,22 @@ impl Chip8Display {
         for (i, b) in bits.iter().enumerate() {
             if *b {
                 let col_idx = col + i as u8;
-                collision |= self.flip_pixel(row, col_idx);
+                collision |= self.flip_pixel(col_idx, row);
             }
         }
         collision
     }
 
-    fn draw_sprite(&mut self, row: u8, col: u8, bytes: &[u8]) -> bool {
+    pub fn draw_sprite(&mut self, col: u8, row: u8, bytes: &[u8]) -> bool {
         let mut collision = false;
         for (index, byte) in bytes.iter().enumerate() {
-            collision |= self.draw_byte(row + (index as u8), col, *byte);
+            collision |= self.draw_byte(col, row + (index as u8), *byte);
         }
         collision
     }
 }
 
-fn pixel_index(row: u8, col: u8) -> usize {
+fn pixel_index(col: u8, row: u8) -> usize {
     let r = row as usize;
     let c = col as usize;
     // Don't care about managing out of bounds errors here, just check as preconditions
@@ -98,9 +107,9 @@ mod tests {
         for c in 0..64 {
             for r in 0..32 {
                 if c < 8 && c % 2 == 0 && r == 0 {
-                    assert_eq!(d.get_pixel(r,c), true);
+                    assert_eq!(d.get_pixel(c, r), true);
                 } else {
-                    assert_eq!(d.get_pixel(r,c), false);
+                    assert_eq!(d.get_pixel(c, r), false);
                 }
             }
         }
@@ -115,9 +124,9 @@ mod tests {
         for c in 0..64 {
             for r in 0..32 {
                 if c > 0 && c < 8 && c % 2 == 0 && r == 0 {
-                    assert_eq!(d.get_pixel(r,c), true);
+                    assert_eq!(d.get_pixel(c, r), true);
                 } else {
-                    assert_eq!(d.get_pixel(r,c), false);
+                    assert_eq!(d.get_pixel(c, r), false);
                 }
             }
         }

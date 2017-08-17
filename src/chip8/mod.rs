@@ -3,17 +3,19 @@ mod tests;
 mod display;
 
 use byteorder::{BigEndian, ByteOrder};
+use self::display::Chip8Display;
 
 // A Chip8 runtime state
 #[derive(Copy)]
 pub struct Chip8State {
-    ram: [u8; 0x1000],  // 4K of memory
-    reg: [u8; 16],      // 16 registers
-    i: u16,             // Memory address register
-    sp: u16,            // Stack pointer
-    t_delay: u8,        // Delay timer
-    t_sound: u8,        // Sound timer
-    pc: u16             // Program counter
+    ram: [u8; 0x1000],      // 4K of memory
+    reg: [u8; 16],          // 16 registers
+    i: u16,                 // Memory address register
+    sp: u16,                // Stack pointer
+    t_delay: u8,            // Delay timer
+    t_sound: u8,            // Sound timer
+    pc: u16,                // Program counter
+    display: Chip8Display,  // Display model
 }
 
 // Manual implementation is required since arrays only implement clone for sizes < 32
@@ -26,7 +28,8 @@ impl Clone for Chip8State {
             sp: self.sp,
             t_delay: self.t_delay,
             t_sound: self.t_sound,
-            pc: self.pc
+            pc: self.pc,
+            display: self.display
         }
     }
 }
@@ -43,7 +46,8 @@ impl Chip8State {
             sp: 0xEA0,
             t_delay: 0,
             t_sound: 0,
-            pc: 0x200
+            pc: 0x200,
+            display: Chip8Display::new(),
         }
     }
 
@@ -110,6 +114,8 @@ impl Chip8State {
             &[0xB,n1,n2,n3] => self.indexed_jump(u16_from_nibbles(0, n1, n2, n3)),
             // Cxkk: Set Vx = random byte AND kk
             &[0xC,x,k1,k2] => self.masked_random(x, u8_from_nibbles(k1, k2)),
+            // Dxyn: Display n-byte sprite starting at memory location I at (Vx, Vy)
+            &[0xD,x,y,n] => self.draw_sprite(x, y, n),
             // Panic if unknown
             _ => panic!("Unknown instruction: {:?}", op)
         }
@@ -319,6 +325,24 @@ impl Chip8State {
         let mut new_state = *self;
         let random = ::rand::random::<u8>();
         new_state.reg[vx as usize] = random & mask;
+        new_state.pc += 2;
+        new_state
+    }
+
+    fn draw_sprite(&self, x: u8, y: u8, n: u8) -> Chip8State {
+        let mut new_state = *self;
+        // get coordinates
+        let col = new_state.reg[x as usize];
+        let row = new_state.reg[y as usize];
+        // load sprite
+        let sprite_begin = new_state.i as usize;
+        let sprite_end = (new_state.i+(n as u16)) as usize;
+        let sprite = &new_state.ram[sprite_begin..sprite_end];
+        // draw
+        let collision = new_state.display.draw_sprite(col, row, sprite);
+        // set vF
+        new_state.reg[0xF] = collision as u8;
+        // increase PC
         new_state.pc += 2;
         new_state
     }

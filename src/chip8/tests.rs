@@ -468,18 +468,60 @@ fn masked_random() {
     assert!(ch8state.reg[0] <= 0xF, "Incorrect register value");
 }
 
-// #[test]
-// fn draw_sprite() {
-//     let mut ch8state = Chip8State::new();
-//     // Sprite map   Binary      Hex
-//     // X.XXX.X.     0b10111010  $BA
-//     // .XXXXX..     0b01111100  $7C
-//     // XX.X.XX.     0b11010110  $D6
-//     // XXXXXXX.     0b11111110  $FE
-//     // .X.X.X..     0b01010100  $54
-//     // X.X.X.X.     0b10101010  $AA
-//     let alien_sprite = &[0xBA, 0x7C, 0xD6, 0xFE, 0x54, 0xAA];
-//     ch8state.reg[0] = 0;
-//     ch8state.reg[1] = 0;
-//     let drw_instruction = &[0xD0,0x16]; // 6-bytes sprite, draw at (V0,V1)
-// }
+#[test]
+fn draw_sprite_no_collision() {
+    let mut ch8state = Chip8State::new();
+    // Sprite map   Binary      Hex
+    // X.XXX.X.     0b10111010  $BA
+    // .XXXXX..     0b01111100  $7C
+    // XX.X.XX.     0b11010110  $D6
+    // XXXXXXX.     0b11111110  $FE
+    // .X.X.X..     0b01010100  $54
+    // X.X.X.X.     0b10101010  $AA
+    let alien_sprite = &[0xBA, 0x7C, 0xD6, 0xFE, 0x54, 0xAA];
+    // put the sprite in 0x300
+    (&mut ch8state.ram[0x300..(0x300+alien_sprite.len())]).copy_from_slice(alien_sprite);
+    // set I to 0x300
+    ch8state.i = 0x300;
+    // set coordinates to 0,0
+    ch8state.reg[0] = 0;
+    ch8state.reg[1] = 0;
+    // load instruction
+    let drw_instruction = &[0xD0,0x16]; // 6-bytes sprite, draw at (V0,V1)
+    ch8state = ch8state.load(drw_instruction);
+    // run it
+    let pc_pre = ch8state.pc;
+    ch8state = ch8state.exec_instruction();
+    assert_eq!(ch8state.pc, pc_pre+2, "Incorrect program counter");
+    // check just some pixels, e.g. a sprite diagonal
+    assert_eq!(ch8state.display.get_pixel(0,0), true, "Incorrect register value");
+    assert_eq!(ch8state.display.get_pixel(1,1), true, "Incorrect register value");
+    assert_eq!(ch8state.display.get_pixel(2,2), false, "Incorrect register value");
+    assert_eq!(ch8state.display.get_pixel(3,3), true, "Incorrect register value");
+    assert_eq!(ch8state.display.get_pixel(4,4), false, "Incorrect register value");
+    assert_eq!(ch8state.display.get_pixel(5,5), false, "Incorrect register value");
+    // check VF for collision indicator
+    assert_eq!(ch8state.reg[0xF], 0, "Incorrect collision detection");
+}
+
+#[test]
+fn draw_sprite_with_collision() {
+    let mut ch8state = Chip8State::new();
+    let alien_sprite = &[0xBA, 0x7C, 0xD6, 0xFE, 0x54, 0xAA];
+    // put the sprite in 0x300
+    (&mut ch8state.ram[0x300..(0x300+alien_sprite.len())]).copy_from_slice(alien_sprite);
+    // set I to 0x300
+    ch8state.i = 0x300;
+    // set coordinates to 0,0
+    ch8state.reg[0] = 0;
+    ch8state.reg[1] = 0;
+    ch8state = ch8state.load(&[0xD0,0x16,0xD0,0x16]);
+    // run it
+    let pc_pre = ch8state.pc;
+    ch8state = ch8state.exec_instruction();
+    assert_eq!(ch8state.pc, pc_pre+2, "Incorrect program counter");
+    assert_eq!(ch8state.reg[0xF], 0, "Incorrect collision detection");
+    ch8state = ch8state.exec_instruction();
+    assert_eq!(ch8state.pc, pc_pre+4, "Incorrect program counter");
+    assert_eq!(ch8state.reg[0xF], 1, "Incorrect collision detection");
+}
