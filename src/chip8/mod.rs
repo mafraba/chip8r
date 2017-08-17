@@ -1,5 +1,6 @@
 #[cfg(test)]
 mod tests;
+mod display;
 
 use byteorder::{BigEndian, ByteOrder};
 

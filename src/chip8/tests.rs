@@ -467,3 +467,19 @@ fn masked_random() {
     assert_eq!(ch8state.pc, pc_pre+2, "Incorrect program counter");
     assert!(ch8state.reg[0] <= 0xF, "Incorrect register value");
 }
+
+// #[test]
+// fn draw_sprite() {
+//     let mut ch8state = Chip8State::new();
+//     // Sprite map   Binary      Hex
+//     // X.XXX.X.     0b10111010  $BA
+//     // .XXXXX..     0b01111100  $7C
+//     // XX.X.XX.     0b11010110  $D6
+//     // XXXXXXX.     0b11111110  $FE
+//     // .X.X.X..     0b01010100  $54
+//     // X.X.X.X.     0b10101010  $AA
+//     let alien_sprite = &[0xBA, 0x7C, 0xD6, 0xFE, 0x54, 0xAA];
+//     ch8state.reg[0] = 0;
+//     ch8state.reg[1] = 0;
+//     let drw_instruction = &[0xD0,0x16]; // 6-bytes sprite, draw at (V0,V1)
+// }
