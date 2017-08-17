@@ -44,13 +44,7 @@ fn clear_screen_instruction() {
     ch8state = ch8state.load(data);
     assert_eq!(ch8state.read_instruction(), Chip8Instruction(0x00E0));
     // put some garbage on display buffer
-    ch8state.ram[0xF00] = 1;
-    ch8state.ram[0xFFF] = 1;
-    ch8state = ch8state.exec_instruction();
-    // check it was cleared
-    for byte in &ch8state.ram[0xF00..0xFFF] {
-        assert_eq!(*byte, 0);
-    }
+    unimplemented!();
 }
 
 #[test]

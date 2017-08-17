@@ -123,7 +123,7 @@ impl Chip8State {
 
     fn clear_screen(&self) -> Chip8State {
         let mut new_state = *self;
-        (&mut new_state.ram[0xF00..0xFFF]).copy_from_slice(&[0;0xFF]);
+        unimplemented!();
         new_state.pc += 2;
         new_state
     }
