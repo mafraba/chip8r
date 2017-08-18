@@ -10,15 +10,16 @@ use self::keyboard::Chip8Keyboard;
 // A Chip8 runtime state
 #[derive(Copy)]
 pub struct Chip8State {
-    ram: [u8; 0x1000],          // 4K of memory
-    reg: [u8; 16],              // 16 registers
-    i: u16,                     // Memory address register
-    sp: u16,                    // Stack pointer
-    t_delay: u8,                // Delay timer
-    t_sound: u8,                // Sound timer
-    pc: u16,                    // Program counter
-    display: Chip8Display,      // Display model
-    keyboard: Chip8Keyboard,    // Display model
+    ram: [u8; 0x1000],              // 4K of memory
+    reg: [u8; 16],                  // 16 registers
+    i: u16,                         // Memory address register
+    sp: u16,                        // Stack pointer
+    t_delay: u8,                    // Delay timer
+    t_sound: u8,                    // Sound timer
+    pc: u16,                        // Program counter
+    display: Chip8Display,          // Display model
+    keyboard: Chip8Keyboard,        // Keyboard model
+    waiting_for_key: Option<u8>,    // If waiting for key press, holds the Vx to put it. 'None' if not waiting
 }
 
 // Manual implementation is required since arrays only implement clone for sizes < 32
@@ -34,6 +35,7 @@ impl Clone for Chip8State {
             pc: self.pc,
             display: self.display,
             keyboard: self.keyboard,
+            waiting_for_key: self.waiting_for_key,
         }
     }
 }
@@ -53,6 +55,7 @@ impl Chip8State {
             pc: 0x200,
             display: Chip8Display::new(),
             keyboard: Chip8Keyboard::new(),
+            waiting_for_key: None,
         }
     }
 
@@ -127,6 +130,8 @@ impl Chip8State {
             &[0xE,x,0xA,0x1] => self.skip_if_key_up(x),
             // Fx07: Skip next instruction if key with the value of Vx is NOT pressed
             &[0xF,x,0,7] => self.move_delay_timer_value_to_register(x),
+            // Fx0A: Wait for a key press, store the value of the key in Vx
+            &[0xF,x,0,0xA] => self.wait_for_key(x),
             // Panic if unknown
             _ => panic!("Unknown instruction: {:?}", op)
         }
@@ -386,6 +391,14 @@ impl Chip8State {
     fn key_down(&mut self, key: u8) -> Chip8State {
         let mut new_state = *self;
         new_state.keyboard.key_pressed(key);
+        match new_state.waiting_for_key {
+            Some(x) => {
+                new_state.reg[x as usize] = key;
+                new_state.pc += 2;
+                new_state.waiting_for_key = None;
+            }
+            _ => {}
+        }
         new_state
     }
 
@@ -400,6 +413,12 @@ impl Chip8State {
         let mut new_state = *self;
         new_state.reg[x as usize] = new_state.t_delay;
         new_state.pc += 2;
+        new_state
+    }
+
+    fn wait_for_key(&self, x: u8) -> Chip8State {
+        let mut new_state = *self;
+        new_state.waiting_for_key = Some(x);
         new_state
     }
 }

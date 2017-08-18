@@ -620,3 +620,33 @@ fn move_delay_timer_value_to_register() {
     assert_eq!(ch8state.pc, pc_pre+2, "Incorrect program counter");
     assert_eq!(ch8state.reg[2], 123);
 }
+
+#[test]
+fn wait_for_key() {
+    let mut ch8state = Chip8State::new();
+    ch8state = ch8state.load(&[0xF3,0x0A]);
+    let pc_pre = ch8state.pc;
+    ch8state = ch8state.exec_instruction();
+    assert_eq!(ch8state.pc, pc_pre, "Incorrect program counter");
+    assert_eq!(ch8state.reg[3], 0);
+    assert_eq!(ch8state.waiting_for_key, Some(3));
+    ch8state = ch8state.exec_instruction();
+    assert_eq!(ch8state.pc, pc_pre, "Incorrect program counter");
+    assert_eq!(ch8state.reg[3], 0);
+    assert_eq!(ch8state.waiting_for_key, Some(3));
+}
+
+#[test]
+fn key_arrives_while_waiting_for_key() {
+    let mut ch8state = Chip8State::new();
+    ch8state = ch8state.load(&[0xF7,0x0A]);
+    let pc_pre = ch8state.pc;
+    ch8state = ch8state.exec_instruction();
+    assert_eq!(ch8state.pc, pc_pre, "Incorrect program counter");
+    assert_eq!(ch8state.reg[7], 0);
+    assert_eq!(ch8state.waiting_for_key, Some(7));
+    ch8state = ch8state.key_down(0xC);
+    assert_eq!(ch8state.pc, pc_pre + 2, "Incorrect program counter");
+    assert_eq!(ch8state.reg[7], 0xC);
+    assert_eq!(ch8state.waiting_for_key, None);
+}
