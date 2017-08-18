@@ -132,6 +132,8 @@ impl Chip8State {
             &[0xF,x,0,7] => self.move_delay_timer_value_to_register(x),
             // Fx0A: Wait for a key press, store the value of the key in Vx
             &[0xF,x,0,0xA] => self.wait_for_key(x),
+            // Fx15: Set delay timer = Vx
+            &[0xF,x,1,5] => self.set_delay_timer(x),
             // Panic if unknown
             _ => panic!("Unknown instruction: {:?}", op)
         }
@@ -419,6 +421,13 @@ impl Chip8State {
     fn wait_for_key(&self, x: u8) -> Chip8State {
         let mut new_state = *self;
         new_state.waiting_for_key = Some(x);
+        new_state
+    }
+
+    fn set_delay_timer(&self, x: u8) -> Chip8State {
+        let mut new_state = *self;
+        new_state.t_delay = new_state.reg[x as usize];
+        new_state.pc += 2;
         new_state
     }
 }

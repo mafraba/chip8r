@@ -650,3 +650,14 @@ fn key_arrives_while_waiting_for_key() {
     assert_eq!(ch8state.reg[7], 0xC);
     assert_eq!(ch8state.waiting_for_key, None);
 }
+
+#[test]
+fn set_delay_timer() {
+    let mut ch8state = Chip8State::new();
+    ch8state = ch8state.load(&[0xF9,0x15]);
+    ch8state.reg[9] = 60;
+    let pc_pre = ch8state.pc;
+    ch8state = ch8state.exec_instruction();
+    assert_eq!(ch8state.pc, pc_pre+2, "Incorrect program counter");
+    assert_eq!(ch8state.t_delay, 60);
+}
