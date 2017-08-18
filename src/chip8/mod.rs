@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod tests;
 mod display;
+mod keyboard;
 
 use byteorder::{BigEndian, ByteOrder};
 use self::display::Chip8Display;
