@@ -32,25 +32,26 @@ mod tests {
 }
 
 // Model for a chip8 keyboard state
-struct Chip8Keyboard {
+#[derive(Clone, Copy)]
+pub struct Chip8Keyboard {
     // keys state: true if currently pressed
-    keys: [bool; 0xF],
+    keys: [bool; 16],
 }
 
 impl Chip8Keyboard {
-    fn new() -> Chip8Keyboard {
-        Chip8Keyboard { keys: [false; 0xF] }
+    pub fn new() -> Chip8Keyboard {
+        Chip8Keyboard { keys: [false; 16] }
     }
 
-    fn is_key_pressed(&self, key: u8) -> bool {
+    pub fn is_key_pressed(&self, key: u8) -> bool {
         self.keys[key as usize]
     }
 
-    fn key_pressed(&mut self, key: u8) {
+    pub fn key_pressed(&mut self, key: u8) {
         self.keys[key as usize] = true;
     }
 
-    fn key_released(&mut self, key: u8) {
+    pub fn key_released(&mut self, key: u8) {
         self.keys[key as usize] = false;
     }
 }

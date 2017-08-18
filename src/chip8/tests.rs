@@ -214,6 +214,43 @@ fn skip_if_registers_not_equal_negative() {
 }
 
 #[test]
+fn skip_if_key_pressed_negative_case() {
+    let mut ch8state = Chip8State::new();
+    // load return instruction and execute
+    ch8state = ch8state.load(&[0xE0,0x9E]);
+    let pc_pre = ch8state.pc;
+    ch8state = ch8state.exec_instruction();
+    // check state
+    assert_eq!(ch8state.pc, pc_pre+2, "Incorrect PC register value");
+}
+
+#[test]
+fn skip_if_key_pressed_negative_case_after_release() {
+    let mut ch8state = Chip8State::new();
+    // load return instruction and execute
+    ch8state = ch8state.load(&[0xE0,0x9E]);
+    let pc_pre = ch8state.pc;
+    ch8state = ch8state.key_down(0);
+    ch8state = ch8state.key_up(0);
+    ch8state = ch8state.exec_instruction();
+    // check state
+    assert_eq!(ch8state.pc, pc_pre+2, "Incorrect PC register value");
+}
+
+#[test]
+fn skip_if_key_pressed_positive_case() {
+    let mut ch8state = Chip8State::new();
+    // load return instruction and execute
+    ch8state = ch8state.load(&[0xE1,0x9E]);
+    ch8state.reg[1] = 0xF;
+    let pc_pre = ch8state.pc;
+    ch8state = ch8state.key_down(0xF);
+    ch8state = ch8state.exec_instruction();
+    // check state
+    assert_eq!(ch8state.pc, pc_pre+4, "Incorrect PC register value");
+}
+
+#[test]
 fn load_immediate() {
     let mut ch8state = Chip8State::new();
     // load return instruction and execute

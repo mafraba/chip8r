@@ -5,18 +5,20 @@ mod keyboard;
 
 use byteorder::{BigEndian, ByteOrder};
 use self::display::Chip8Display;
+use self::keyboard::Chip8Keyboard;
 
 // A Chip8 runtime state
 #[derive(Copy)]
 pub struct Chip8State {
-    ram: [u8; 0x1000],      // 4K of memory
-    reg: [u8; 16],          // 16 registers
-    i: u16,                 // Memory address register
-    sp: u16,                // Stack pointer
-    t_delay: u8,            // Delay timer
-    t_sound: u8,            // Sound timer
-    pc: u16,                // Program counter
-    display: Chip8Display,  // Display model
+    ram: [u8; 0x1000],          // 4K of memory
+    reg: [u8; 16],              // 16 registers
+    i: u16,                     // Memory address register
+    sp: u16,                    // Stack pointer
+    t_delay: u8,                // Delay timer
+    t_sound: u8,                // Sound timer
+    pc: u16,                    // Program counter
+    display: Chip8Display,      // Display model
+    keyboard: Chip8Keyboard,    // Display model
 }
 
 // Manual implementation is required since arrays only implement clone for sizes < 32
@@ -30,7 +32,8 @@ impl Clone for Chip8State {
             t_delay: self.t_delay,
             t_sound: self.t_sound,
             pc: self.pc,
-            display: self.display
+            display: self.display,
+            keyboard: self.keyboard,
         }
     }
 }
@@ -49,6 +52,7 @@ impl Chip8State {
             t_sound: 0,
             pc: 0x200,
             display: Chip8Display::new(),
+            keyboard: Chip8Keyboard::new(),
         }
     }
 
@@ -117,6 +121,8 @@ impl Chip8State {
             &[0xC,x,k1,k2] => self.masked_random(x, u8_from_nibbles(k1, k2)),
             // Dxyn: Display n-byte sprite starting at memory location I at (Vx, Vy)
             &[0xD,x,y,n] => self.draw_sprite(x, y, n),
+            // Ex9E: Skip next instruction if key with the value of Vx is pressed
+            &[0xE,x,9,0xE] => self.skip_if_key_down(x),
             // Panic if unknown
             _ => panic!("Unknown instruction: {:?}", op)
         }
@@ -345,6 +351,34 @@ impl Chip8State {
         new_state.reg[0xF] = collision as u8;
         // increase PC
         new_state.pc += 2;
+        new_state
+    }
+
+    fn skip_if_key_down(&self, x: u8) -> Chip8State {
+        let mut new_state = *self;
+        let key = new_state.reg[x as usize];
+        new_state.pc += 2;
+        if new_state.is_key_down(key) {
+            new_state.pc += 2;
+        }
+        new_state
+    }
+
+    fn is_key_down(&self, key: u8) -> bool {
+        self.keyboard.is_key_pressed(key)
+    }
+
+    // handler for 'key pressed' events
+    fn key_down(&mut self, key: u8) -> Chip8State {
+        let mut new_state = *self;
+        new_state.keyboard.key_pressed(key);
+        new_state
+    }
+
+    // handler for 'key released' events
+    fn key_up(&mut self, key: u8) -> Chip8State {
+        let mut new_state = *self;
+        new_state.keyboard.key_released(key);
         new_state
     }
 }
