@@ -125,6 +125,8 @@ impl Chip8State {
             &[0xE,x,9,0xE] => self.skip_if_key_down(x),
             // ExA1: Skip next instruction if key with the value of Vx is NOT pressed
             &[0xE,x,0xA,0x1] => self.skip_if_key_up(x),
+            // Fx07: Skip next instruction if key with the value of Vx is NOT pressed
+            &[0xF,x,0,7] => self.move_delay_timer_value_to_register(x),
             // Panic if unknown
             _ => panic!("Unknown instruction: {:?}", op)
         }
@@ -391,6 +393,13 @@ impl Chip8State {
     fn key_up(&mut self, key: u8) -> Chip8State {
         let mut new_state = *self;
         new_state.keyboard.key_released(key);
+        new_state
+    }
+
+    fn move_delay_timer_value_to_register(&self, x: u8) -> Chip8State {
+        let mut new_state = *self;
+        new_state.reg[x as usize] = new_state.t_delay;
+        new_state.pc += 2;
         new_state
     }
 }

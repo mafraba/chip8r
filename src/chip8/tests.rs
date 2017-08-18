@@ -609,3 +609,14 @@ fn draw_sprite_with_collision() {
     assert_eq!(ch8state.pc, pc_pre+4, "Incorrect program counter");
     assert_eq!(ch8state.reg[0xF], 1, "Incorrect collision detection");
 }
+
+#[test]
+fn move_delay_timer_value_to_register() {
+    let mut ch8state = Chip8State::new();
+    ch8state.t_delay = 123;
+    ch8state = ch8state.load(&[0xF2,0x07]);
+    let pc_pre = ch8state.pc;
+    ch8state = ch8state.exec_instruction();
+    assert_eq!(ch8state.pc, pc_pre+2, "Incorrect program counter");
+    assert_eq!(ch8state.reg[2], 123);
+}
