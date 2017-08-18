@@ -123,6 +123,8 @@ impl Chip8State {
             &[0xD,x,y,n] => self.draw_sprite(x, y, n),
             // Ex9E: Skip next instruction if key with the value of Vx is pressed
             &[0xE,x,9,0xE] => self.skip_if_key_down(x),
+            // ExA1: Skip next instruction if key with the value of Vx is NOT pressed
+            &[0xE,x,0xA,0x1] => self.skip_if_key_up(x),
             // Panic if unknown
             _ => panic!("Unknown instruction: {:?}", op)
         }
@@ -359,6 +361,16 @@ impl Chip8State {
         let key = new_state.reg[x as usize];
         new_state.pc += 2;
         if new_state.is_key_down(key) {
+            new_state.pc += 2;
+        }
+        new_state
+    }
+
+    fn skip_if_key_up(&self, x: u8) -> Chip8State {
+        let mut new_state = *self;
+        let key = new_state.reg[x as usize];
+        new_state.pc += 2;
+        if !new_state.is_key_down(key) {
             new_state.pc += 2;
         }
         new_state
