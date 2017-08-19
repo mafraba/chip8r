@@ -717,3 +717,35 @@ fn binary_coded_decimal_conversion() {
     assert_eq!(ch8state.ram[0x401], 5);
     assert_eq!(ch8state.ram[0x402], 4);
 }
+
+#[test]
+fn dump_all_registers() {
+    let mut ch8state = Chip8State::new();
+    ch8state = ch8state.load(&[0xFF,0x55]);
+    ch8state.reg = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+    ch8state.i = 0x400;
+    let pc_pre = ch8state.pc;
+    ch8state = ch8state.exec_instruction();
+    assert_eq!(ch8state.pc, pc_pre+2, "Incorrect program counter");
+    for (index, value) in ch8state.reg.iter().enumerate() {
+        assert_eq!(ch8state.ram[0x400+index], *value);
+    }
+}
+
+#[test]
+fn dump_some_registers() {
+    let mut ch8state = Chip8State::new();
+    ch8state = ch8state.load(&[0xF5,0x55]);
+    ch8state.reg = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+    ch8state.i = 0x400;
+    let pc_pre = ch8state.pc;
+    ch8state = ch8state.exec_instruction();
+    assert_eq!(ch8state.pc, pc_pre+2, "Incorrect program counter");
+    for (index, value) in ch8state.reg.iter().enumerate() {
+        if index <= 5 {
+            assert_eq!(ch8state.ram[0x400+index], *value);
+        } else {
+            assert_eq!(ch8state.ram[0x400+index], 0);
+        }
+    }
+}
