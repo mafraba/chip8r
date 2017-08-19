@@ -143,6 +143,8 @@ impl Chip8State {
             &[0xF,x,1,0xE] => self.add_register_to_i(x),
             // Fx29: Set I = location of sprite for digit Vx
             &[0xF,x,2,9] => self.set_sprite_location(x),
+            // Fx33: Store BCD representation of Vx in memory locations I, I+1, and I+2
+            &[0xF,x,3,3] => self.binary_coded_decimal_conversion(x),
             // Panic if unknown
             _ => panic!("Unknown instruction: {:?}", op)
         }
@@ -459,6 +461,20 @@ impl Chip8State {
         let mut new_state = *self;
         let vx = new_state.reg[x as usize];
         new_state.i = (vx as u16) * 5;
+        new_state.pc += 2;
+        new_state
+    }
+
+    fn binary_coded_decimal_conversion(&self, x: u8) -> Self {
+        let mut new_state = *self;
+        let target_address = new_state.i as usize;
+        let vx = new_state.reg[x as usize];
+        let units = vx % 10;
+        let tens = (vx / 10) % 10;
+        let hundreds = (vx / 100) % 10;
+        new_state.ram[target_address] = hundreds;
+        new_state.ram[target_address+1] = tens;
+        new_state.ram[target_address+2] = units;
         new_state.pc += 2;
         new_state
     }

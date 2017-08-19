@@ -703,3 +703,17 @@ fn location_of_sprite() {
     assert_eq!(ch8state.pc, pc_pre+2, "Incorrect program counter");
     assert_eq!(ch8state.i, 0xF*5);
 }
+
+#[test]
+fn binary_coded_decimal_conversion() {
+    let mut ch8state = Chip8State::new();
+    ch8state = ch8state.load(&[0xF0,0x33]);
+    ch8state.reg[0] = 0xFE;
+    ch8state.i = 0x400;
+    let pc_pre = ch8state.pc;
+    ch8state = ch8state.exec_instruction();
+    assert_eq!(ch8state.pc, pc_pre+2, "Incorrect program counter");
+    assert_eq!(ch8state.ram[0x400], 2);
+    assert_eq!(ch8state.ram[0x401], 5);
+    assert_eq!(ch8state.ram[0x402], 4);
+}
