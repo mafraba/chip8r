@@ -749,3 +749,37 @@ fn dump_some_registers() {
         }
     }
 }
+
+#[test]
+fn load_all_registers() {
+    let mut ch8state = Chip8State::new();
+    ch8state = ch8state.load(&[0xFF,0x65]);
+    let samples = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+    ch8state.i = 0x400;
+    (&mut ch8state.ram[0x400..0x410]).copy_from_slice(&samples);
+    let pc_pre = ch8state.pc;
+    ch8state = ch8state.exec_instruction();
+    assert_eq!(ch8state.pc, pc_pre+2, "Incorrect program counter");
+    for (index, value) in ch8state.reg.iter().enumerate() {
+        assert_eq!(*value, ch8state.ram[0x400+index]);
+    }
+}
+
+#[test]
+fn load_some_registers() {
+    let mut ch8state = Chip8State::new();
+    ch8state = ch8state.load(&[0xF7,0x65]);
+    let samples = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+    ch8state.i = 0x400;
+    (&mut ch8state.ram[0x400..0x410]).copy_from_slice(&samples);
+    let pc_pre = ch8state.pc;
+    ch8state = ch8state.exec_instruction();
+    assert_eq!(ch8state.pc, pc_pre+2, "Incorrect program counter");
+    for (index, value) in ch8state.reg.iter().enumerate() {
+        if index > 7 {
+            assert_eq!(*value, 0);
+        } else {
+            assert_eq!(*value, ch8state.ram[0x400+index]);
+        }
+    }
+}

@@ -147,6 +147,8 @@ impl Chip8State {
             &[0xF,x,3,3] => self.binary_coded_decimal_conversion(x),
             // Fx55: Store registers V0 through Vx in memory starting at location I
             &[0xF,x,5,5] => self.dump_registers_up_to(x),
+            // Fx65: Read registers V0 through Vx from memory starting at location I
+            &[0xF,x,6,5] => self.load_registers_up_to(x),
             // Panic if unknown
             _ => panic!("Unknown instruction: {:?}", op)
         }
@@ -489,6 +491,19 @@ impl Chip8State {
             let mut target_ram_slice = &mut new_state.ram[target_ram_range];
             let regs_slice = &new_state.reg[0..(1 + x as usize)];
             target_ram_slice.copy_from_slice(regs_slice);
+        }
+        new_state.pc += 2;
+        new_state
+    }
+
+    fn load_registers_up_to(&self, x: u8) -> Self {
+        let mut new_state = *self;
+        {
+            let source_address = new_state.i as usize;
+            let source_ram_range = source_address..(1 + source_address + x as usize);
+            let source_ram_slice = &new_state.ram[source_ram_range];
+            let regs_slice = &mut new_state.reg[0..(1 + x as usize)];
+            regs_slice.copy_from_slice(source_ram_slice);
         }
         new_state.pc += 2;
         new_state
