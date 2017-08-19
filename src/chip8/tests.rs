@@ -687,8 +687,19 @@ fn add_register_to_i() {
 
 #[test]
 fn font_sprites_are_loaded() {
-    let mut ch8state = Chip8State::new();
-    for (index, byte) in font_sprites.iter().enumerate() {
+    let ch8state = Chip8State::new();
+    for (index, byte) in FONT_SPRITES.iter().enumerate() {
         assert_eq!(ch8state.ram[index], *byte);
     }
+}
+
+#[test]
+fn location_of_sprite() {
+    let mut ch8state = Chip8State::new();
+    ch8state = ch8state.load(&[0xF4,0x29]);
+    ch8state.reg[4] = 0xF;
+    let pc_pre = ch8state.pc;
+    ch8state = ch8state.exec_instruction();
+    assert_eq!(ch8state.pc, pc_pre+2, "Incorrect program counter");
+    assert_eq!(ch8state.i, 0xF*5);
 }

@@ -58,7 +58,7 @@ impl Chip8State {
             waiting_for_key: None,
         };
         // load font sprites
-        (&mut state.ram[0..font_sprites.len()]).copy_from_slice(&font_sprites);
+        (&mut state.ram[0..FONT_SPRITES.len()]).copy_from_slice(&FONT_SPRITES);
         state
     }
 
@@ -141,6 +141,8 @@ impl Chip8State {
             &[0xF,x,1,8] => self.set_sound_timer(x),
             // Fx1E: Set I = I + Vx
             &[0xF,x,1,0xE] => self.add_register_to_i(x),
+            // Fx29: Set I = location of sprite for digit Vx
+            &[0xF,x,2,9] => self.set_sprite_location(x),
             // Panic if unknown
             _ => panic!("Unknown instruction: {:?}", op)
         }
@@ -452,6 +454,14 @@ impl Chip8State {
         new_state.pc += 2;
         new_state
     }
+
+    fn set_sprite_location(&self, x: u8) -> Self {
+        let mut new_state = *self;
+        let vx = new_state.reg[x as usize];
+        new_state.i = (vx as u16) * 5;
+        new_state.pc += 2;
+        new_state
+    }
 }
 
 // Chip8 instructions modeled as 16-bit unsigned integers
@@ -477,7 +487,7 @@ fn u8_from_nibbles(n0: u8, n1: u8) -> u8 {
     (n0 << 4) | n1
 }
 
-const font_sprites: [u8; 80] = [
+const FONT_SPRITES: [u8; 80] = [
     // "0"	Binary	Hex
     0xF0,    0x90,    0x90,    0x90,    0xF0,
     // "1"	Binary	Hex
