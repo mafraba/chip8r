@@ -136,6 +136,8 @@ impl Chip8State {
             &[0xF,x,1,5] => self.set_delay_timer(x),
             // Fx18: Set delay timer = Vx
             &[0xF,x,1,8] => self.set_sound_timer(x),
+            // Fx1E: Set I = I + Vx
+            &[0xF,x,1,0xE] => self.add_register_to_i(x),
             // Panic if unknown
             _ => panic!("Unknown instruction: {:?}", op)
         }
@@ -436,6 +438,14 @@ impl Chip8State {
     fn set_sound_timer(&self, x: u8) -> Self {
         let mut new_state = *self;
         new_state.t_sound = new_state.reg[x as usize];
+        new_state.pc += 2;
+        new_state
+    }
+
+    fn add_register_to_i(&self, x: u8) -> Self {
+        let mut new_state = *self;
+        let vx = new_state.reg[x as usize];
+        new_state.i += vx as u16;
         new_state.pc += 2;
         new_state
     }
