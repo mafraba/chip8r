@@ -45,7 +45,7 @@ impl Chip8State {
 
     // Create a new Chip8State instance
     pub fn new() -> Chip8State {
-        Chip8State {
+        let mut state = Chip8State {
             ram: [0; 0x1000],
             reg: [0; 16],
             i: 0,
@@ -56,7 +56,10 @@ impl Chip8State {
             display: Chip8Display::new(),
             keyboard: Chip8Keyboard::new(),
             waiting_for_key: None,
-        }
+        };
+        // load font sprites
+        (&mut state.ram[0..font_sprites.len()]).copy_from_slice(&font_sprites);
+        state
     }
 
     // Load data onto RAM, return new state
@@ -473,3 +476,38 @@ fn u16_from_nibbles(n0: u8, n1: u8, n2: u8, n3: u8) -> u16 {
 fn u8_from_nibbles(n0: u8, n1: u8) -> u8 {
     (n0 << 4) | n1
 }
+
+const font_sprites: [u8; 80] = [
+    // "0"	Binary	Hex
+    0xF0,    0x90,    0x90,    0x90,    0xF0,
+    // "1"	Binary	Hex
+    0x20,    0x60,    0x20,    0x20,    0x70,
+    // "2"	Binary	Hex
+    0xF0,    0x10,    0xF0,    0x80,    0xF0,
+    // "3"	Binary	Hex
+    0xF0,    0x10,    0xF0,    0x10,    0xF0,
+    // "4"	Binary	Hex
+    0x90,    0x90,    0xF0,    0x10,    0x10,
+    // "5"	Binary	Hex
+    0xF0,    0x80,    0xF0,    0x10,    0xF0,
+    // "6"	Binary	Hex
+    0xF0,    0x80,    0xF0,    0x90,    0xF0,
+    // "7"	Binary	Hex
+    0xF0,    0x10,    0x20,    0x40,    0x40,
+    // "8"	Binary	Hex
+    0xF0,    0x90,    0xF0,    0x90,    0xF0,
+    // "9"	Binary	Hex
+    0xF0,    0x90,    0xF0,    0x10,    0xF0,
+    // "A"	Binary	Hex
+    0xF0,    0x90,    0xF0,    0x90,    0x90,
+    // "B"	Binary	Hex
+    0xE0,    0x90,    0xE0,    0x90,    0xE0,
+    // "C"	Binary	Hex
+    0xF0,    0x80,    0x80,    0x80,    0xF0,
+    // "D"	Binary	Hex
+    0xE0,    0x90,    0x90,    0x90,    0xE0,
+    // "E"	Binary	Hex
+    0xF0,    0x80,    0xF0,    0x80,    0xF0,
+    // "F"	Binary	Hex
+    0xF0,    0x80,    0xF0,    0x80,    0x80,
+];

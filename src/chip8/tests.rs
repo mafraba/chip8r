@@ -684,3 +684,11 @@ fn add_register_to_i() {
     assert_eq!(ch8state.pc, pc_pre+2, "Incorrect program counter");
     assert_eq!(ch8state.i, 0x301);
 }
+
+#[test]
+fn font_sprites_are_loaded() {
+    let mut ch8state = Chip8State::new();
+    for (index, byte) in font_sprites.iter().enumerate() {
+        assert_eq!(ch8state.ram[index], *byte);
+    }
+}
