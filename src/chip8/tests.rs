@@ -661,3 +661,14 @@ fn set_delay_timer() {
     assert_eq!(ch8state.pc, pc_pre+2, "Incorrect program counter");
     assert_eq!(ch8state.t_delay, 60);
 }
+
+#[test]
+fn set_sound_timer() {
+    let mut ch8state = Chip8State::new();
+    ch8state = ch8state.load(&[0xF9,0x18]);
+    ch8state.reg[9] = 60;
+    let pc_pre = ch8state.pc;
+    ch8state = ch8state.exec_instruction();
+    assert_eq!(ch8state.pc, pc_pre+2, "Incorrect program counter");
+    assert_eq!(ch8state.t_sound, 60);
+}
