@@ -1,0 +1,121 @@
+   Compiling chip8r v0.1.0 (file:///Users/manuel/code/rust/chip8r)
+warning: unused imports: `self`, `stdin`
+ --> src/chip8/termui.rs:3:15
+  |
+3 | use std::io::{self, Write, stdout, stdin};
+  |               ^^^^                 ^^^^^
+  |
+  = note: #[warn(unused_imports)] on by default
+
+warning: unused import: `termion::event::*;`
+ --> src/chip8/termui.rs:5:5
+  |
+5 | use termion::event::*;
+  |     ^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `termion::input::TermRead`
+ --> src/chip8/termui.rs:6:5
+  |
+6 | use termion::input::TermRead;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: method is never used: `key_pressed`
+  --> src/chip8/keyboard.rs:50:5
+   |
+50 | /     pub fn key_pressed(&mut self, key: u8) {
+51 | |         self.keys[key as usize] = true;
+52 | |     }
+   | |_____^
+   |
+   = note: #[warn(dead_code)] on by default
+
+warning: method is never used: `key_released`
+  --> src/chip8/keyboard.rs:54:5
+   |
+54 | /     pub fn key_released(&mut self, key: u8) {
+55 | |         self.keys[key as usize] = false;
+56 | |     }
+   | |_____^
+
+warning: method is never used: `key_down`
+   --> src/chip8/mod.rs:413:5
+    |
+413 | /     fn key_down(&mut self, key: u8) -> Chip8State {
+414 | |         let mut new_state = *self;
+415 | |         new_state.keyboard.key_pressed(key);
+416 | |         match new_state.waiting_for_key {
+...   |
+424 | |         new_state
+425 | |     }
+    | |_____^
+
+warning: method is never used: `key_up`
+   --> src/chip8/mod.rs:428:5
+    |
+428 | /     fn key_up(&mut self, key: u8) -> Chip8State {
+429 | |         let mut new_state = *self;
+430 | |         new_state.keyboard.key_released(key);
+431 | |         new_state
+432 | |     }
+    | |_____^
+
+warning: unused `std::result::Result` which must be used
+  --> src/chip8/termui.rs:13:5
+   |
+13 | /     write!(stdout, "{clear}{goto}{green}Pure CHIP-8 joy!  {reset}",
+14 | |              // Full screen clear.
+15 | |              clear = clear::All,
+16 | |              // Goto the cell.
+17 | |              goto  = cursor::Goto(2, 2),
+18 | |              green   = color::Fg(color::Green),
+19 | |              reset = color::Fg(color::Reset));
+   | |______________________________________________^
+   |
+   = note: #[warn(unused_must_use)] on by default
+   = note: this error originates in a macro outside of the current crate
+
+warning: unused `std::result::Result` which must be used
+  --> src/chip8/termui.rs:20:5
+   |
+20 | /     write!(stdout, "{bold}{blue}:D{reset}",
+21 | |              bold  = style::Bold,
+22 | |              blue  = color::Fg(color::Blue),
+23 | |              reset = style::Reset);
+   | |___________________________________^
+   |
+   = note: this error originates in a macro outside of the current crate
+
+warning: unused `std::result::Result` which must be used
+  --> src/chip8/termui.rs:26:9
+   |
+26 |         write!(stdout, "{}{:3} ", cursor::Goto(2, (row + 5) as u16), row);
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: this error originates in a macro outside of the current crate
+
+warning: unused `std::result::Result` which must be used
+  --> src/chip8/termui.rs:29:17
+   |
+29 |                 write!(stdout, "█");
+   |                 ^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: this error originates in a macro outside of the current crate
+
+warning: unused `std::result::Result` which must be used
+  --> src/chip8/termui.rs:31:17
+   |
+31 |                 write!(stdout, " ");
+   |                 ^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: this error originates in a macro outside of the current crate
+
+warning: variable does not need to be mutable
+   --> src/chip8/mod.rs:496:17
+    |
+496 |             let mut target_ram_slice = &mut new_state.ram[target_ram_range];
+    |                 ^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: #[warn(unused_mut)] on by default
+
+    Finished dev [unoptimized + debuginfo] target(s) in 1.48 secs
+     Running `target/debug/chip8r -i c8games/INVADERS`

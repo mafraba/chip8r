@@ -27,8 +27,11 @@ impl Chip8Display {
     }
 
     fn flip_pixel(&mut self, col: u8, row: u8) -> bool {
+        if col as usize >= TOTAL_COLS || row as usize >= TOTAL_ROWS {
+            return false;
+        }
         let idx = pixel_index(col, row);
-        let prev = self.get_pixel(col, row);
+        let prev = self.pixels[idx];
         self.pixels[idx] = !prev;
         prev
     }
@@ -71,7 +74,7 @@ fn pixel_index(col: u8, row: u8) -> usize {
     // Don't care about managing out of bounds errors here, just check as preconditions
     if r >= TOTAL_ROWS { panic!("Row index out of bounds: {}", r) }
     if c >= TOTAL_COLS { panic!("Column index out of bounds: {}", c) }
-    32*r + c
+    TOTAL_COLS*r + c
 }
 
 #[cfg(test)]

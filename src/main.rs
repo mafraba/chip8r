@@ -3,21 +3,23 @@
 extern crate byteorder;     // to read instructions as big_endian u16 words
 extern crate clap;          // to manage command line options and arguments
 extern crate rand;          // to generate random numbers
+extern crate termion;
 
 mod chip8;
 
 use clap::{Arg, App};
 use chip8::Chip8State;
+use chip8::termui::display;
 use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
 
 fn main() {
     // Define command line arguments.
-    let matches = App::new("CHIP-8 dissassembler")
+    let matches = App::new("CHIP-8 interpreter")
         .version("0.1.0")
         .author("Manuel Franco <mafraba@gmail.com>")
-        .about("Reads CHIP-8 programs and prints them")
+        .about("Run CHIP-8 programs in all their glory")
         .arg(Arg::with_name("file.ch8")
                  .short("i")
                  .long("input")
@@ -43,5 +45,13 @@ fn main() {
     // Load file to memory
     ch8state = ch8state.load(&ch8_buffer);
 
-    println!("To be continued ... :)");
+    use std::{thread, time};
+    let interval = time::Duration::from_millis(1000/120); // ~ 60Hz
+    thread::sleep(interval);
+
+    for i in 0..(10*60) {
+        ch8state = ch8state.exec_instruction();
+        if i % 5 == 0 { display(ch8state); }
+        thread::sleep(interval);
+    }
 }

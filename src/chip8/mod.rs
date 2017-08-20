@@ -2,6 +2,7 @@
 mod tests;
 mod display;
 mod keyboard;
+pub mod termui;
 
 use byteorder::{BigEndian, ByteOrder};
 use self::display::Chip8Display;
@@ -69,6 +70,10 @@ impl Chip8State {
         new_state
     }
 
+    pub fn get_pixel(&self, col: u8, row: u8) -> bool {
+        self.display.get_pixel(col, row)
+    }
+
     // Read next instruction
     fn read_instruction(&self) -> Chip8Instruction {
         let pointer = &self.ram[(self.pc as usize) ..];
@@ -77,7 +82,7 @@ impl Chip8State {
     }
 
     // Execute next instruction, returning a new state
-    fn exec_instruction(&self) -> Chip8State {
+    pub fn exec_instruction(&self) -> Chip8State {
         let op = self.read_instruction();
         let nibbles = [op.nibble(1), op.nibble(2), op.nibble(3), op.nibble(4)];
         match &nibbles {
