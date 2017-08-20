@@ -783,3 +783,19 @@ fn load_some_registers() {
         }
     }
 }
+
+#[test]
+fn decrease_timers() {
+    let mut ch8state = Chip8State::new();
+    let pc_pre = ch8state.pc;
+    ch8state.t_delay = 1;
+    ch8state.t_sound = 1;
+    ch8state = ch8state.decrease_timers();
+    assert_eq!(ch8state.pc, pc_pre, "Incorrect program counter");
+    assert_eq!(ch8state.t_delay, 0);
+    assert_eq!(ch8state.t_sound, 0);
+    ch8state = ch8state.decrease_timers();
+    assert_eq!(ch8state.pc, pc_pre, "Incorrect program counter");
+    assert_eq!(ch8state.t_delay, 0);
+    assert_eq!(ch8state.t_sound, 0);
+}

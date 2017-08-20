@@ -81,6 +81,17 @@ impl Chip8State {
         Chip8Instruction(word)
     }
 
+    pub fn decrease_timers(&self) -> Self {
+        let mut new_state = *self;
+        if new_state.t_delay > 0 {
+            new_state.t_delay -= 1;
+        }
+        if new_state.t_sound > 0 {
+            new_state.t_sound -= 1;
+        }
+        new_state
+    }
+
     // Execute next instruction, returning a new state
     pub fn exec_instruction(&self) -> Chip8State {
         let op = self.read_instruction();

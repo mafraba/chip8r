@@ -1,9 +1,10 @@
 #![feature(slice_patterns)]
 
 extern crate byteorder;     // to read instructions as big_endian u16 words
+#[macro_use] extern crate chan;          // for easier timers
 extern crate clap;          // to manage command line options and arguments
 extern crate rand;          // to generate random numbers
-extern crate termion;
+extern crate termion;       // to display screen on terminal
 
 mod chip8;
 
@@ -45,13 +46,31 @@ fn main() {
     // Load file to memory
     ch8state = ch8state.load(&ch8_buffer);
 
-    use std::{thread, time};
-    let interval = time::Duration::from_millis(1000/120); // ~ 60Hz
-    thread::sleep(interval);
+    // use std::{thread, time};
+    // let interval = time::Duration::from_millis(1000/120); // ~ 60Hz
+    // thread::sleep(interval);
+    //
+    // for i in 0..(10*60) {
+    //     ch8state = ch8state.exec_instruction();
+    //     if i % 5 == 0 { display(ch8state); }
+    //     thread::sleep(interval);
+    // }
 
-    for i in 0..(10*60) {
-        ch8state = ch8state.exec_instruction();
-        if i % 5 == 0 { display(ch8state); }
-        thread::sleep(interval);
+    let tick = chan::tick_ms(10); // ~ 100Hz
+    let timers_decrease = chan::tick_ms(1000/60); // ~ 60Hz
+    let display_refresh = chan::tick_ms(1000/15); // ~ 25Hz
+    loop {
+        chan_select! {
+            // default => { println!("   ."); thread::sleep_ms(50); },
+            tick.recv() => {
+                ch8state = ch8state.exec_instruction();
+            },
+            timers_decrease.recv() => {
+                ch8state.decrease_timers();
+            },
+            display_refresh.recv() => {
+                display(ch8state);
+            },
+        }
     }
 }
