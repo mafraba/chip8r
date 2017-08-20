@@ -267,11 +267,11 @@ impl Chip8State {
         new_state
     }
 
-    // TODO: overflow case ?
     fn add_immediate(&self, reg_index: u8, value: u8) -> Chip8State {
         let mut new_state = *self;
         let current = new_state.reg[reg_index as usize];
-        new_state.reg[reg_index as usize] = current + value;
+        let (sum, _) = current.overflowing_add(value);
+        new_state.reg[reg_index as usize] = sum;
         new_state.pc += 2;
         new_state
     }
