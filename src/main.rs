@@ -10,10 +10,10 @@ mod chip8;
 
 use clap::{Arg, App};
 use chip8::Chip8State;
-use chip8::termui::display;
 use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
+use std::thread;
 
 fn main() {
     // Define command line arguments.
@@ -59,18 +59,34 @@ fn main() {
     let tick = chan::tick_ms(10); // ~ 100Hz
     let timers_decrease = chan::tick_ms(1000/60); // ~ 60Hz
     let display_refresh = chan::tick_ms(1000/15); // ~ 25Hz
+    let (tx_keys, rx_keys) = chan::sync(20);
+    thread::spawn(|| chip8::termui::listen_for_keys(tx_keys));
     loop {
         chan_select! {
-            // default => { println!("   ."); thread::sleep_ms(50); },
             tick.recv() => {
                 ch8state = ch8state.exec_instruction();
             },
             timers_decrease.recv() => {
-                ch8state.decrease_timers();
+                ch8state = ch8state.decrease_timers();
             },
             display_refresh.recv() => {
-                display(ch8state);
+                chip8::termui::display(ch8state);
             },
+            rx_keys.recv() -> key => {
+                // if hexadecimal digit
+                match key.unwrap().to_digit(16) {
+                    Some(digit) => {
+                        let d = digit as u8;
+                        // since no key-release events are received, need to simulate it with a new press
+                        if ch8state.is_key_down(d) {
+                            ch8state = ch8state.key_up(d);
+                        } else {
+                            ch8state = ch8state.key_down(d);
+                        }
+                    },
+                    None => {}
+                }
+            }
         }
     }
 }

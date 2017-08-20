@@ -416,12 +416,12 @@ impl Chip8State {
         new_state
     }
 
-    fn is_key_down(&self, key: u8) -> bool {
+    pub fn is_key_down(&self, key: u8) -> bool {
         self.keyboard.is_key_pressed(key)
     }
 
     // handler for 'key pressed' events
-    fn key_down(&mut self, key: u8) -> Chip8State {
+    pub fn key_down(&mut self, key: u8) -> Chip8State {
         let mut new_state = *self;
         new_state.keyboard.key_pressed(key);
         match new_state.waiting_for_key {
@@ -436,7 +436,7 @@ impl Chip8State {
     }
 
     // handler for 'key released' events
-    fn key_up(&mut self, key: u8) -> Chip8State {
+    pub fn key_up(&mut self, key: u8) -> Chip8State {
         let mut new_state = *self;
         new_state.keyboard.key_released(key);
         new_state
