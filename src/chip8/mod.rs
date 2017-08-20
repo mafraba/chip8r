@@ -504,7 +504,7 @@ impl Chip8State {
         {
             let target_address = new_state.i as usize;
             let target_ram_range = target_address..(1 + target_address + x as usize);
-            let mut target_ram_slice = &mut new_state.ram[target_ram_range];
+            let target_ram_slice = &mut new_state.ram[target_ram_range];
             let regs_slice = &new_state.reg[0..(1 + x as usize)];
             target_ram_slice.copy_from_slice(regs_slice);
         }

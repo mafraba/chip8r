@@ -1,7 +1,7 @@
 use super::*;
 
-use std::io::{self, Write, stdout, stdin};
-use termion::{color, cursor, clear, style};
+use std::io::{Write, stdout, stdin};
+use termion::{color, cursor, clear};
 use termion::event::*;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
@@ -19,7 +19,7 @@ pub fn display(chip8state: Chip8State) {
                     goto  = cursor::Goto(2, 2),
                     green = color::Fg(color::Green),
                     blue  = color::Fg(color::Blue),
-                    color_reset = color::Fg(color::Reset));
+                    color_reset = color::Fg(color::Reset)).unwrap();
 
     // Print display
     for row in 0..32 {
@@ -27,12 +27,12 @@ pub fn display(chip8state: Chip8State) {
                 goto = cursor::Goto(2, (row + 4) as u16),
                 gray = color::Fg(color::LightBlack),
                 reset = color::Fg(color::Reset),
-                row = row);
+                row = row).unwrap();
         for col in 0..64 {
             if chip8state.get_pixel(col, row) {
-                write!(stdout, "█");
+                write!(stdout, "█").unwrap();
             } else {
-                write!(stdout, " ");
+                write!(stdout, " ").unwrap();
             }
         }
     }
@@ -41,23 +41,23 @@ pub fn display(chip8state: Chip8State) {
     write!(stdout, "{goto}{blue}###############{color_reset} ",
                     goto = cursor::Goto(0, 37),
                     blue = color::Fg(color::Blue),
-                    color_reset = color::Fg(color::Reset));
+                    color_reset = color::Fg(color::Reset)).unwrap();
     for key in 0..0x10 {
         if chip8state.is_key_down(key) {
             write!(stdout, "{color} {key:X} {reset}",
                     color = color::Bg(color::Red),
                     reset = color::Bg(color::Reset),
-                    key = key);
+                    key = key).unwrap();
         } else {
             write!(stdout, "{color} {key:X} {reset}",
                     color = color::Bg(color::LightBlack),
                     reset = color::Bg(color::Reset),
-                    key = key);
+                    key = key).unwrap();
         }
     }
     write!(stdout, "{blue} ###############{color_reset}",
                     blue = color::Fg(color::Blue),
-                    color_reset = color::Fg(color::Reset));
+                    color_reset = color::Fg(color::Reset)).unwrap();
 
     stdout.flush().unwrap();
 }

@@ -46,21 +46,16 @@ fn main() {
     // Load file to memory
     ch8state = ch8state.load(&ch8_buffer);
 
-    // use std::{thread, time};
-    // let interval = time::Duration::from_millis(1000/120); // ~ 60Hz
-    // thread::sleep(interval);
-    //
-    // for i in 0..(10*60) {
-    //     ch8state = ch8state.exec_instruction();
-    //     if i % 5 == 0 { display(ch8state); }
-    //     thread::sleep(interval);
-    // }
-
+    // Create timer to execution of instruction
     let tick = chan::tick_ms(10); // ~ 100Hz
+    // Create timer thread for decreasing delay and sound timers
     let timers_decrease = chan::tick_ms(1000/60); // ~ 60Hz
-    let display_refresh = chan::tick_ms(1000/15); // ~ 25Hz
+    // Create timer thread for refreshing display
+    let display_refresh = chan::tick_ms(1000/15); // ~ 15Hz
+    // Create thread to read keyboard events
     let (tx_keys, rx_keys) = chan::sync(20);
     thread::spawn(|| chip8::termui::listen_for_keys(tx_keys));
+
     loop {
         chan_select! {
             tick.recv() => {
@@ -77,7 +72,8 @@ fn main() {
                 match key.unwrap().to_digit(16) {
                     Some(digit) => {
                         let d = digit as u8;
-                        // since no key-release events are received, need to simulate it with a new press
+                        // since no key-release events are received,
+                        // need to simulate it with a new press
                         if ch8state.is_key_down(d) {
                             ch8state = ch8state.key_up(d);
                         } else {
