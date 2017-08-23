@@ -75,3 +75,15 @@ pub fn listen_for_keys(keys_tx: ::chan::Sender<char>) {
         }
     }
 }
+
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
+//     use test::Bencher;
+//
+//     #[bench]
+//     fn display_bench(b: &mut Bencher) {
+//         let mut ch8state = Chip8State::new();
+//         b.iter(|| display(ch8state));
+//     }
+// }

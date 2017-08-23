@@ -1,10 +1,12 @@
 #![feature(slice_patterns)]
+#![feature(test)]
 
 extern crate byteorder;     // to read instructions as big_endian u16 words
 #[macro_use] extern crate chan;          // for easier timers
 extern crate clap;          // to manage command line options and arguments
 extern crate rand;          // to generate random numbers
 extern crate termion;       // to display screen on terminal
+extern crate test;
 
 mod chip8;
 

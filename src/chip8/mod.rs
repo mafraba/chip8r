@@ -1,5 +1,8 @@
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod benchs;
+
 mod display;
 mod keyboard;
 pub mod termui;
