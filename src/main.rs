@@ -24,15 +24,24 @@ fn main() {
         .author("Manuel Franco <mafraba@gmail.com>")
         .about("Run CHIP-8 programs in all their glory")
         .arg(Arg::with_name("file.ch8")
-                 .short("i")
-                 .long("input")
-                 .takes_value(true)
-                 .required(true)
-                 .help("Input CHIP-8 program"))
+                .short("i")
+                .long("input")
+                .takes_value(true)
+                .required(true)
+                .help("Input CHIP-8 program"))
+        .arg(Arg::with_name("clock_speed")
+                .short("s")
+                .long("speed")
+                .takes_value(true)
+                .default_value("500")
+                .validator(validate_clock_speed)
+                .help("Clock speed (in hertzs)"))
         .get_matches();
 
     // Get input file
     let input_file = matches.value_of("file.ch8").unwrap();
+    let clock_speed_str = matches.value_of("clock_speed").unwrap();
+    let clock_speed = clock_speed_str.parse::<u32>().unwrap();
 
     // Read it
     let mut ch8_file = match File::open(input_file) {
@@ -49,7 +58,7 @@ fn main() {
     ch8state = ch8state.load(&ch8_buffer);
 
     // Create timer to execution of instruction
-    let tick = chan::tick_ms(1000/1000); // ~ 1MHz
+    let tick = chan::tick_ms(1000/clock_speed);
     // Create timer thread for decreasing delay and sound timers
     let timers_decrease = chan::tick_ms(1000/60); // ~ 60Hz
     // Create timer thread for refreshing display
@@ -89,5 +98,19 @@ fn main() {
                 }
             }
         }
+    }
+}
+
+fn validate_clock_speed(clock_speed_str: String) -> Result<(), String> {
+    let clock_speed = clock_speed_str.parse::<u32>();
+    match clock_speed {
+        Ok(s) => {
+            if s>0 && s<=1000 {
+                Ok(())
+            } else {
+                Err(String::from("the clock speed must be lower than 1000Hz"))
+            }
+        },
+        _ => Err(format!("not an integer value: {}", clock_speed_str))
     }
 }
