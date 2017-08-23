@@ -49,13 +49,16 @@ fn main() {
     ch8state = ch8state.load(&ch8_buffer);
 
     // Create timer to execution of instruction
-    let tick = chan::tick_ms(1000/500); // ~ 300Hz
+    let tick = chan::tick_ms(1000/600); // ~ 300Hz
     // Create timer thread for decreasing delay and sound timers
-    let timers_decrease = chan::tick_ms(1000/60); // ~ 60Hz
+    let timers_decrease = chan::tick_ms(1000/120); // ~ 60Hz
     // Create timer thread for refreshing display
-    let display_refresh = chan::tick_ms(1000/15); // ~ 15Hz
+    let display_refresh_timer = chan::tick_ms(1000/15); // ~ 15Hz
+    // Create display thread so we can just send the state and continue this main thread
+    let (tx_display, rx_display) = chan::async();
+    thread::spawn(|| chip8::termui::display_loop(rx_display));
     // Create thread to read keyboard events
-    let (tx_keys, rx_keys) = chan::sync(20);
+    let (tx_keys, rx_keys) = chan::async();
     thread::spawn(|| chip8::termui::listen_for_keys(tx_keys));
 
     loop {
@@ -66,8 +69,8 @@ fn main() {
             timers_decrease.recv() => {
                 ch8state = ch8state.decrease_timers();
             },
-            display_refresh.recv() => {
-                chip8::termui::display(ch8state);
+            display_refresh_timer.recv() => {
+                tx_display.send(ch8state);
             },
             rx_keys.recv() -> key => {
                 // if hexadecimal digit

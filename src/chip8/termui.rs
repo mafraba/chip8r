@@ -6,7 +6,17 @@ use termion::event::*;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 
-pub fn display(chip8state: Chip8State) {
+pub fn display_loop(state_rx: ::chan::Receiver<Chip8State>) {
+    loop {
+        chan_select! {
+            state_rx.recv() -> st => {
+                display(st.unwrap());
+            }
+        }
+    }
+}
+
+fn display(chip8state: Chip8State) {
 
     let mut stdout = stdout().into_raw_mode().unwrap();
 
