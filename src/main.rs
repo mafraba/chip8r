@@ -49,9 +49,9 @@ fn main() {
     ch8state = ch8state.load(&ch8_buffer);
 
     // Create timer to execution of instruction
-    let tick = chan::tick_ms(1000/600); // ~ 300Hz
+    let tick = chan::tick_ms(1000/1000); // ~ 1MHz
     // Create timer thread for decreasing delay and sound timers
-    let timers_decrease = chan::tick_ms(1000/120); // ~ 60Hz
+    let timers_decrease = chan::tick_ms(1000/60); // ~ 60Hz
     // Create timer thread for refreshing display
     let display_refresh_timer = chan::tick_ms(1000/15); // ~ 15Hz
     // Create display thread so we can just send the state and continue this main thread
